@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testplatform-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testplatform-postgres
+  template:
+    metadata:
+      labels:
+        app: testplatform-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        env:
+        - name: POSTGRES_DB
+          value: testplatform
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: testplatform-postgres
+spec:
+  selector:
+    app: testplatform-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testplatform-mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testplatform-mongodb
+  template:
+    metadata:
+      labels:
+        app: testplatform-mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:4.4
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: root
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: mongodb
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongodb-storage
+        persistentVolumeClaim:
+          claimName: mongodb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: testplatform-mongodb
+spec:
+  selector:
+    app: testplatform-mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testplatform-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testplatform-backend
+  template:
+    metadata:
+      labels:
+        app: testplatform-backend
+    spec:
+      containers:
+      - name: backend
+        image: testplatform-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://testplatform-postgres:5432/testplatform
+        - name: SPRING_DATASOURCE_USERNAME
+          value: postgres
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: postgres
+        - name: SPRING_DATA_MONGODB_URI
+          value: mongodb://root:mongodb@testplatform-mongodb:27017/testplatform
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: testplatform-backend
+spec:
+  selector:
+    app: testplatform-backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testplatform-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testplatform-frontend
+  template:
+    metadata:
+      labels:
+        app: testplatform-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: testplatform-frontend:latest
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: testplatform-frontend
+spec:
+  selector:
+    app: testplatform-frontend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

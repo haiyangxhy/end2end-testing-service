@@ -1,0 +1,110 @@
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.chart-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.chart-card h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.pie-chart {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.chart-legend {
+  flex: 1;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 4px;
+}
+
+.color-box.passed {
+  background-color: #28a745;
+}
+
+.color-box.failed {
+  background-color: #dc3545;
+}
+
+.color-box.skipped {
+  background-color: #ffc107;
+}
+
+.pie-chart-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.pie-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.center-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.center-label {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6c757d;
+}

@@ -1,0 +1,27 @@
+.report-dashboard {
+  padding: 20px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.chart-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.chart-card h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}

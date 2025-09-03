@@ -1,0 +1,27 @@
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logout-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #ff3333;
+}

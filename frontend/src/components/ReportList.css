@@ -1,0 +1,65 @@
+.report-list {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.report-list h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.report-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-list th,
+.report-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.report-list th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.pass-rate {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.pass-rate.green {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.pass-rate.yellow {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.pass-rate.red {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.view-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.view-btn:hover {
+  background-color: #0069d9;
+}

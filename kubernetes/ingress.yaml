@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: testplatform-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: testplatform.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: testplatform-frontend
+            port:
+              number: 3000
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: testplatform-backend
+            port:
+              number: 8080
