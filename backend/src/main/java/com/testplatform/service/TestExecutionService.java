@@ -13,4 +13,8 @@ public interface TestExecutionService {
     TestExecution updateExecution(String id, TestExecution execution);
     void deleteExecution(String id);
     List<TestExecution> getExecutionsByStatus(TestExecution.ExecutionStatus status);
+    
+    // 添加执行测试和停止测试的方法
+    TestExecution executeTest(String suiteId);
+    TestExecution stopExecution(String id);
 }

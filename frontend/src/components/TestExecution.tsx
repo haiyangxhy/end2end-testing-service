@@ -23,70 +23,105 @@ const TestExecution: React.FC = () => {
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [executionStatus, setExecutionStatus] = useState<ExecutionStatus | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for demonstration
+  // 从后端获取真实的测试套件数据
   useEffect(() => {
-    const mockSuites: TestSuite[] = [
-      {
-        id: '1',
-        name: '用户管理API测试',
-        description: '测试用户管理相关API接口',
-        type: 'API'
-      },
-      {
-        id: '2',
-        name: '订单流程测试',
-        description: '测试订单创建、支付、发货等业务流程',
-        type: 'BUSINESS'
-      },
-      {
-        id: '3',
-        name: '登录页面UI测试',
-        description: '测试登录页面的UI元素和交互',
-        type: 'UI'
+    const fetchTestSuites = async () => {
+      try {
+        setLoading(true);
+        // 从localStorage获取token
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch('http://localhost:8180/api/test-suites', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTestSuites(data);
+        setError(null);
+      } catch (err) {
+        console.error('获取测试套件失败:', err);
+        setError('获取测试套件数据失败');
+      } finally {
+        setLoading(false);
       }
-    ];
-    setTestSuites(mockSuites);
+    };
+
+    fetchTestSuites();
   }, []);
 
-  const handleExecute = (suiteId: string) => {
-    // Simulate test execution
-    setIsExecuting(true);
-    
-    const newExecution: ExecutionStatus = {
-      id: Date.now().toString(),
-      suiteId,
-      status: 'RUNNING',
-      startTime: new Date().toISOString(),
-      endTime: '',
-      result: '执行中...'
-    };
-    
-    setExecutionStatus(newExecution);
-    
-    // Simulate execution progress
-    setTimeout(() => {
-      setExecutionStatus({
-        ...newExecution,
-        status: 'COMPLETED',
-        endTime: new Date().toISOString(),
-        result: '测试执行完成，通过率: 85%'
+  const handleExecute = async (suiteId: string) => {
+    try {
+      setIsExecuting(true);
+      setError(null);
+      
+      // 从localStorage获取token
+      const token = localStorage.getItem('token');
+      
+      // 调用后端API执行测试
+      const response = await fetch(`http://localhost:8180/api/test-executions/execute/${suiteId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
-      setIsExecuting(false);
-    }, 5000);
-  };
-
-  const handleStopExecution = () => {
-    if (executionStatus) {
-      setExecutionStatus({
-        ...executionStatus,
-        status: 'FAILED',
-        endTime: new Date().toISOString(),
-        result: '测试执行已停止'
-      });
+      
+      if (!response.ok) {
+        throw new Error(`执行测试失败: ${response.status}`);
+      }
+      
+      const executionData = await response.json();
+      setExecutionStatus(executionData);
+    } catch (err) {
+      console.error('执行测试失败:', err);
+      setError('执行测试失败');
       setIsExecuting(false);
     }
   };
+
+  const handleStopExecution = async () => {
+    if (executionStatus) {
+      try {
+        // 从localStorage获取token
+        const token = localStorage.getItem('token');
+        
+        // 调用后端API停止测试执行
+        const response = await fetch(`http://localhost:8180/api/test-executions/stop/${executionStatus.id}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`停止测试失败: ${response.status}`);
+        }
+        
+        const updatedStatus = await response.json();
+        setExecutionStatus(updatedStatus);
+        setIsExecuting(false);
+      } catch (err) {
+        console.error('停止测试失败:', err);
+        setError('停止测试失败');
+      }
+    }
+  };
+
+  if (loading) {
+    return <div className="test-execution">加载中...</div>;
+  }
+
+  if (error) {
+    return <div className="test-execution">错误: {error}</div>;
+  }
 
   return (
     <div className="test-execution">

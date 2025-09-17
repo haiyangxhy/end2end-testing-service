@@ -2,10 +2,15 @@ package com.testplatform.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity
 @Table(name = "test_executions")
 public class TestExecution {
+    private static final Logger logger = LoggerFactory.getLogger(TestExecution.class);
+    
     @Id
     private String id;
     
@@ -81,6 +86,17 @@ public class TestExecution {
     
     public void setResult(String result) {
         this.result = result;
+    }
+    
+    @PrePersist
+    public void generateId() {
+        logger.info("generateId() called, current id: {}", this.id);
+        if (this.id == null || this.id.isEmpty()) {
+            this.id = UUID.randomUUID().toString();
+            logger.info("Generated new ID: {}", this.id);
+        } else {
+            logger.info("ID already exists: {}", this.id);
+        }
     }
     
     public enum ExecutionStatus {

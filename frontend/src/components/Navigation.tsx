@@ -40,12 +40,13 @@ const Navigation: React.FC = () => {
             报告中心
           </Link>
         </li>
+        {/* 添加目标系统配置管理链接 */}
         <li>
           <Link 
-            to="/scheduler" 
-            className={location.pathname === '/scheduler' ? 'active' : ''}
+            to="/target-system-config" 
+            className={location.pathname === '/target-system-config' ? 'active' : ''}
           >
-            任务调度
+            系统配置
           </Link>
         </li>
       </ul>

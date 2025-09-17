@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReportList from './ReportList';
-import ReportDetail from './ReportDetail';
+
 import ChartVisualization from './ChartVisualization';
+import ReportDetail from './ReportDetail';
 import './ReportDashboard.css';
 
 interface TestReport {
@@ -19,19 +20,11 @@ interface TestReport {
     startTime: string;
     endTime: string;
   };
-  details: ReportDetail[];
+  details: any[];
   createdAt: string;
 }
 
-interface ReportDetail {
-  testCaseId: string;
-  testCaseName: string;
-  status: string;
-  errorMessage: string;
-  responseTime: number;
-  startTime: string;
-  endTime: string;
-}
+
 
 const ReportDashboard: React.FC = () => {
   const [reports, setReports] = useState<TestReport[]>([]);

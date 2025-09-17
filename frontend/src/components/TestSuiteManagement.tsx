@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TestSuiteList from './TestSuiteList';
 import TestSuiteForm from './TestSuiteForm';
+import axios from 'axios';
 import './TestSuiteManagement.css';
 
 interface TestSuite {
@@ -17,40 +18,32 @@ const TestSuiteManagement: React.FC = () => {
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [selectedSuite, setSelectedSuite] = useState<TestSuite | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for demonstration
+  // Fetch data from backend API
   useEffect(() => {
-    const mockData: TestSuite[] = [
-      {
-        id: '1',
-        name: '用户管理API测试',
-        description: '测试用户管理相关API接口',
-        type: 'API',
-        createdAt: '2023-01-15T10:30:00Z',
-        updatedAt: '2023-01-15T10:30:00Z',
-        testCases: ['1', '2', '3']
-      },
-      {
-        id: '2',
-        name: '订单流程测试',
-        description: '测试订单创建、支付、发货等业务流程',
-        type: 'BUSINESS',
-        createdAt: '2023-01-16T14:20:00Z',
-        updatedAt: '2023-01-16T14:20:00Z',
-        testCases: ['4', '5', '6', '7']
-      },
-      {
-        id: '3',
-        name: '登录页面UI测试',
-        description: '测试登录页面的UI元素和交互',
-        type: 'UI',
-        createdAt: '2023-01-17T09:15:00Z',
-        updatedAt: '2023-01-17T09:15:00Z',
-        testCases: ['8', '9']
-      }
-    ];
-    setTestSuites(mockData);
+    fetchTestSuites();
   }, []);
+
+  const fetchTestSuites = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:8180/api/test-suites', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setTestSuites(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch test suites:', err);
+      setError('获取测试套件数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreateSuite = () => {
     setSelectedSuite(null);
@@ -62,21 +55,55 @@ const TestSuiteManagement: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDeleteSuite = (id: string) => {
-    setTestSuites(testSuites.filter(suite => suite.id !== id));
+  const handleDeleteSuite = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:8180/api/test-suites/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setTestSuites(testSuites.filter(suite => suite.id !== id));
+    } catch (err) {
+      console.error('Failed to delete test suite:', err);
+      alert('删除测试套件失败');
+    }
   };
 
-  const handleSaveSuite = (suite: TestSuite) => {
-    if (suite.id) {
-      // Update existing suite
-      setTestSuites(testSuites.map(s => s.id === suite.id ? suite : s));
-    } else {
-      // Create new suite
-      const newSuite = { ...suite, id: Date.now().toString() };
-      setTestSuites([...testSuites, newSuite]);
+  const handleSaveSuite = async (suite: TestSuite) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (suite.id) {
+        // Update existing suite
+        const response = await axios.put(`http://localhost:8180/api/test-suites/${suite.id}`, suite, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setTestSuites(testSuites.map(s => s.id === suite.id ? response.data : s));
+      } else {
+        // Create new suite
+        const response = await axios.post('http://localhost:8180/api/test-suites', suite, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setTestSuites([...testSuites, response.data]);
+      }
+      setIsFormOpen(false);
+    } catch (err) {
+      console.error('Failed to save test suite:', err);
+      alert('保存测试套件失败');
     }
-    setIsFormOpen(false);
   };
+
+  if (loading) {
+    return <div className="test-suite-management">加载中...</div>;
+  }
+
+  if (error) {
+    return <div className="test-suite-management">错误: {error}</div>;
+  }
 
   return (
     <div className="test-suite-management">

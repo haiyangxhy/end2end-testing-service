@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,29 +16,37 @@ import java.util.Optional;
 @RequestMapping("/api/test-suites")
 @CrossOrigin(origins = "*")
 public class TestSuiteController {
+    private static final Logger logger = LoggerFactory.getLogger(TestSuiteController.class);
     
     @Autowired
     private TestSuiteService testSuiteService;
     
     @GetMapping
     public ResponseEntity<List<TestSuite>> getAllTestSuites() {
+        logger.info("Getting all test suites");
         List<TestSuite> testSuites = testSuiteService.getAllTestSuites();
+        logger.info("Found {} test suites", testSuites.size());
         return new ResponseEntity<>(testSuites, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<TestSuite> getTestSuiteById(@PathVariable String id) {
+        logger.info("Getting test suite by ID: {}", id);
         Optional<TestSuite> testSuite = testSuiteService.getTestSuiteById(id);
         if (testSuite.isPresent()) {
+            logger.info("Found test suite with ID: {}", id);
             return new ResponseEntity<>(testSuite.get(), HttpStatus.OK);
         } else {
+            logger.info("Test suite not found with ID: {}", id);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
     
     @PostMapping
     public ResponseEntity<TestSuite> createTestSuite(@RequestBody TestSuite testSuite) {
+        logger.info("Creating test suite, received ID: {}", testSuite.getId());
         TestSuite createdTestSuite = testSuiteService.createTestSuite(testSuite);
+        logger.info("Created test suite, returned ID: {}", createdTestSuite.getId());
         return new ResponseEntity<>(createdTestSuite, HttpStatus.CREATED);
     }
     

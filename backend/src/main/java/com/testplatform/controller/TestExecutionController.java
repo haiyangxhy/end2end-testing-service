@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/executions")
+@RequestMapping("/api/test-executions")
 @CrossOrigin(origins = "*")
 public class TestExecutionController {
     
@@ -62,5 +62,23 @@ public class TestExecutionController {
     public ResponseEntity<List<TestExecution>> getExecutionsByStatus(@PathVariable TestExecution.ExecutionStatus status) {
         List<TestExecution> executions = testExecutionService.getExecutionsByStatus(status);
         return new ResponseEntity<>(executions, HttpStatus.OK);
+    }
+    
+    // 添加执行测试的端点
+    @PostMapping("/execute/{suiteId}")
+    public ResponseEntity<TestExecution> executeTest(@PathVariable String suiteId) {
+        TestExecution execution = testExecutionService.executeTest(suiteId);
+        return new ResponseEntity<>(execution, HttpStatus.OK);
+    }
+    
+    // 添加停止测试执行的端点
+    @PostMapping("/stop/{id}")
+    public ResponseEntity<TestExecution> stopExecution(@PathVariable String id) {
+        TestExecution execution = testExecutionService.stopExecution(id);
+        if (execution != null) {
+            return new ResponseEntity<>(execution, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

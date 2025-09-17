@@ -2,10 +2,15 @@ package com.testplatform.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity
 @Table(name = "test_cases")
 public class TestCase {
+    private static final Logger logger = LoggerFactory.getLogger(TestCase.class);
+    
     @Id
     private String id;
     
@@ -25,6 +30,9 @@ public class TestCase {
     @Column(columnDefinition = "JSONB")
     private String config;
     
+    @Column(name = "test_steps", columnDefinition = "TEXT")
+    private String testSteps;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -34,13 +42,14 @@ public class TestCase {
     // Constructors
     public TestCase() {}
     
-    public TestCase(String id, String suiteId, String name, String description, TestCaseType type, String config) {
+    public TestCase(String id, String suiteId, String name, String description, TestCaseType type, String config, String testSteps) {
         this.id = id;
         this.suiteId = suiteId;
         this.name = name;
         this.description = description;
         this.type = type;
         this.config = config;
+        this.testSteps = testSteps;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -94,6 +103,14 @@ public class TestCase {
         this.config = config;
     }
     
+    public String getTestSteps() {
+        return testSteps;
+    }
+    
+    public void setTestSteps(String testSteps) {
+        this.testSteps = testSteps;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -108,6 +125,17 @@ public class TestCase {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    @PrePersist
+    public void generateId() {
+        logger.info("generateId() called, current id: {}", this.id);
+        if (this.id == null || this.id.isEmpty()) {
+            this.id = UUID.randomUUID().toString();
+            logger.info("Generated new ID: {}", this.id);
+        } else {
+            logger.info("ID already exists: {}", this.id);
+        }
     }
     
     public enum TestCaseType {

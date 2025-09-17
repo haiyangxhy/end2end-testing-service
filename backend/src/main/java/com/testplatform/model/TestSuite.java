@@ -3,10 +3,15 @@ package com.testplatform.model;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity
 @Table(name = "test_suites")
 public class TestSuite {
+    private static final Logger logger = LoggerFactory.getLogger(TestSuite.class);
+    
     @Id
     private String id;
     
@@ -98,6 +103,17 @@ public class TestSuite {
     
     public void setTestCases(List<String> testCases) {
         this.testCases = testCases;
+    }
+    
+    @PrePersist
+    public void generateId() {
+        logger.info("generateId() called, current id: {}", this.id);
+        if (this.id == null || this.id.isEmpty()) {
+            this.id = UUID.randomUUID().toString();
+            logger.info("Generated new ID: {}", this.id);
+        } else {
+            logger.info("ID already exists: {}", this.id);
+        }
     }
     
     public enum TestSuiteType {

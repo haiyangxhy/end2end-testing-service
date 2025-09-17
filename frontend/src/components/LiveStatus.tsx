@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import TestReport from './TestReport';
 import './LiveStatus.css';
 
 interface ExecutionStatus {
@@ -15,6 +16,8 @@ interface LiveStatusProps {
 }
 
 const LiveStatus: React.FC<LiveStatusProps> = ({ executionStatus }) => {
+  const [showReport, setShowReport] = useState(false);
+
   if (!executionStatus) {
     return (
       <div className="live-status">
@@ -39,6 +42,10 @@ const LiveStatus: React.FC<LiveStatusProps> = ({ executionStatus }) => {
   const formatTime = (timeString: string) => {
     if (!timeString) return '-';
     return new Date(timeString).toLocaleString();
+  };
+
+  const toggleReport = () => {
+    setShowReport(!showReport);
   };
 
   return (
@@ -95,6 +102,20 @@ const LiveStatus: React.FC<LiveStatusProps> = ({ executionStatus }) => {
              executionStatus.status === 'FAILED' ? '执行失败' : '等待执行'}
           </div>
         </div>
+        
+        {(executionStatus.status === 'COMPLETED' || executionStatus.status === 'FAILED') && (
+          <div className="report-section">
+            <button className="report-btn" onClick={toggleReport}>
+              {showReport ? '隐藏报告' : '查看详细报告'}
+            </button>
+            
+            {showReport && (
+              <div className="report-container">
+                <TestReport executionId={executionStatus.id} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

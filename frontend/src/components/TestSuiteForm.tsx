@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './TestSuiteForm.css';
 
 interface TestSuite {
-  id?: string;
+  id: string;
   name: string;
   description: string;
   type: 'API' | 'UI' | 'BUSINESS';
-  createdAt?: string;
-  updatedAt?: string;
-  testCases?: string[];
+  createdAt: string;
+  updatedAt: string;
+  testCases: string[];
 }
 
 interface TestSuiteFormProps {
@@ -19,9 +19,13 @@ interface TestSuiteFormProps {
 
 const TestSuiteForm: React.FC<TestSuiteFormProps> = ({ suite, onSave, onCancel }) => {
   const [formData, setFormData] = useState<TestSuite>({
+    id: '',
     name: '',
     description: '',
-    type: 'API'
+    type: 'API',
+    createdAt: '',
+    updatedAt: '',
+    testCases: []
   });
 
   useEffect(() => {

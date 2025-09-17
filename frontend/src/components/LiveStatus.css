@@ -93,3 +93,27 @@
   color: #6c757d;
   font-size: 14px;
 }
+
+.report-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.report-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.report-btn:hover {
+  background-color: #218838;
+}
+
+.report-container {
+  margin-top: 20px;
+}
