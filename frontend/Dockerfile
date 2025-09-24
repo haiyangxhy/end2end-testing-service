@@ -13,6 +13,9 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# If .env.docker exists, use it for the build
+RUN if [ -f .env.docker ]; then cp .env.docker .env; fi
+
 # Build the application
 RUN npm run build
 

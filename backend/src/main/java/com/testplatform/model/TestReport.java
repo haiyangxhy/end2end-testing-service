@@ -1,30 +1,36 @@
 package com.testplatform.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
+import com.testplatform.util.ReportDetailListConverter;
+import com.testplatform.util.ReportSummaryConverter;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Document(collection = "test_reports")
+@Entity
+@Table(name = "test_reports")
 public class TestReport {
     @Id
+    @Column(name = "id")
     private String id;
     
-    @Field("execution_id")
+    @Column(name = "execution_id")
     private String executionId;
     
-    @Field("suite_id")
+    @Column(name = "suite_id")
     private String suiteId;
     
+    @Column(name = "name")
     private String name;
     
+    @Column(name = "summary", columnDefinition = "jsonb")
+    @Convert(converter = ReportSummaryConverter.class)
     private ReportSummary summary;
     
+    @Column(name = "details", columnDefinition = "jsonb")
+    @Convert(converter = ReportDetailListConverter.class)
     private List<ReportDetail> details;
     
-    @Field("created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
     
     // Constructors
@@ -178,11 +184,16 @@ public class TestReport {
     public static class ReportDetail {
         private String testCaseId;
         private String testCaseName;
+        private String testType;
         private String status;
+        private String message;
         private String errorMessage;
+        private String errorDetails;
         private long responseTime;
         private String startTime;
         private String endTime;
+        private String timestamp;
+        private String metadata;
         
         // Constructors
         public ReportDetail() {}
@@ -204,6 +215,14 @@ public class TestReport {
             this.testCaseName = testCaseName;
         }
         
+        public String getTestType() {
+            return testType;
+        }
+        
+        public void setTestType(String testType) {
+            this.testType = testType;
+        }
+        
         public String getStatus() {
             return status;
         }
@@ -212,12 +231,28 @@ public class TestReport {
             this.status = status;
         }
         
+        public String getMessage() {
+            return message;
+        }
+        
+        public void setMessage(String message) {
+            this.message = message;
+        }
+        
         public String getErrorMessage() {
             return errorMessage;
         }
         
         public void setErrorMessage(String errorMessage) {
             this.errorMessage = errorMessage;
+        }
+        
+        public String getErrorDetails() {
+            return errorDetails;
+        }
+        
+        public void setErrorDetails(String errorDetails) {
+            this.errorDetails = errorDetails;
         }
         
         public long getResponseTime() {
@@ -242,6 +277,22 @@ public class TestReport {
         
         public void setEndTime(String endTime) {
             this.endTime = endTime;
+        }
+        
+        public String getTimestamp() {
+            return timestamp;
+        }
+        
+        public void setTimestamp(String timestamp) {
+            this.timestamp = timestamp;
+        }
+        
+        public String getMetadata() {
+            return metadata;
+        }
+        
+        public void setMetadata(String metadata) {
+            this.metadata = metadata;
         }
     }
 }

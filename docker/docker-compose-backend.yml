@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for structured data
+  postgres:
+    image: postgres:13
+    container_name: testplatform-postgres
+    environment:
+      POSTGRES_DB: testplatform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - testplatform-network
+
+  # MongoDB for unstructured data
+  mongodb:
+    image: mongo:4.4
+    container_name: testplatform-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - testplatform-network
+
+  # Backend Spring Boot application
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: testplatform-backend
+    ports:
+      - "8180:8080"
+    environment:
+      # 使用Docker环境的配置文件
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - postgres
+      - mongodb
+    networks:
+      - testplatform-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  testplatform-network:
+    driver: bridge

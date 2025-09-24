@@ -1,0 +1,321 @@
+.monitoring-dashboard {
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.monitoring-dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: 16px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-cards {
+  margin-bottom: 24px;
+}
+
+.dashboard-cards .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dashboard-cards .ant-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.dashboard-tabs {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.dashboard-tabs .ant-tabs-content-holder {
+  padding: 24px;
+}
+
+.chart-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.realtime-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.realtime-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #999;
+}
+
+.performance-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.performance-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.statistics-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+
+.statistics-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.statistics-card .ant-card-body {
+  padding: 24px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .monitoring-dashboard {
+    padding: 16px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .dashboard-header .ant-space {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .monitoring-dashboard {
+    padding: 8px;
+  }
+  
+  .dashboard-tabs .ant-tabs-content-holder {
+    padding: 16px;
+  }
+  
+  .statistics-card .ant-card-body {
+    padding: 16px;
+  }
+}
+
+/* 自定义滚动条 */
+.dashboard-tabs ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dashboard-tabs ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.dashboard-tabs ::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dashboard-tabs ::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-cards .ant-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.dashboard-cards .ant-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.dashboard-cards .ant-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dashboard-cards .ant-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.dashboard-cards .ant-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* 状态指示器 */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-indicator.running {
+  background-color: #1890ff;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.completed {
+  background-color: #52c41a;
+}
+
+.status-indicator.failed {
+  background-color: #ff4d4f;
+}
+
+.status-indicator.pending {
+  background-color: #faad14;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}
+
+/* 表格样式优化 */
+.realtime-card .ant-table {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.realtime-card .ant-table-thead > tr > th {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+}
+
+.realtime-card .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.realtime-card .ant-table-tbody > tr:hover > td {
+  background: #f5f5f5;
+}
+
+/* 进度条样式 */
+.statistics-card .ant-progress-bg {
+  border-radius: 4px;
+}
+
+.statistics-card .ant-progress-success-bg {
+  background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
+}
+
+/* 卡片标题样式 */
+.ant-card-head-title {
+  font-weight: 600;
+  color: #262626;
+}
+
+/* 统计数字样式 */
+.ant-statistic-content {
+  font-weight: 600;
+}
+
+.ant-statistic-title {
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+/* 按钮组样式 */
+.dashboard-header .ant-space {
+  flex-wrap: wrap;
+}
+
+.dashboard-header .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* 标签页样式 */
+.dashboard-tabs .ant-tabs-tab {
+  font-weight: 500;
+  padding: 12px 24px;
+}
+
+.dashboard-tabs .ant-tabs-tab-active {
+  color: #1890ff;
+}
+
+.dashboard-tabs .ant-tabs-ink-bar {
+  background: #1890ff;
+}
+
+/* 图表容器样式 */
+.chart-card .recharts-wrapper {
+  margin: 0 auto;
+}
+
+/* 空状态样式 */
+.empty-state {
+  background: #fafafa;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+}
+
+/* 加载状态样式 */
+.ant-spin-container {
+  min-height: 200px;
+}
+
+/* 工具提示样式 */
+.ant-tooltip-inner {
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 6px;
+}
+
+.ant-tooltip-arrow::before {
+  background: rgba(0, 0, 0, 0.85);
+}

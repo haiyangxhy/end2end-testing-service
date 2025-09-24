@@ -2,10 +2,10 @@ package com.testplatform.service;
 
 import com.testplatform.model.TestExecution;
 import com.testplatform.model.TestCase;
-import com.testplatform.model.TargetSystemConfig;
+import com.testplatform.model.TestEnvironment;
 import com.testplatform.repository.TestExecutionRepository;
 import com.testplatform.repository.TestCaseRepository;
-import com.testplatform.repository.TargetSystemConfigRepository;
+import com.testplatform.repository.TestEnvironmentRepository;
 import com.testplatform.testing.TestExecutor;
 import com.testplatform.testing.TestExecutorFactory;
 import com.testplatform.testing.TestExecutionResult;
@@ -13,7 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +33,7 @@ public class TestExecutionServiceImpl implements TestExecutionService {
     private TestCaseRepository testCaseRepository;
     
     @Autowired
-    private TargetSystemConfigRepository targetSystemConfigRepository;
+    private TestEnvironmentRepository testEnvironmentRepository;
     
     @Autowired
     private TestExecutorFactory testExecutorFactory;
@@ -97,14 +101,14 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                 // 获取测试套件中的所有测试用例
                 List<TestCase> testCases = testCaseRepository.findBySuiteId(suiteId);
                 
-                // 获取启用的目标系统配置
-                List<TargetSystemConfig> activeConfigs = targetSystemConfigRepository.findByIsActiveTrue();
-                TargetSystemConfig targetSystemConfig = activeConfigs.isEmpty() ? null : activeConfigs.get(0);
+                // 获取启用的测试环境
+                List<TestEnvironment> activeEnvironments = testEnvironmentRepository.findByIsActiveTrueOrderByCreatedAtDesc();
+                TestEnvironment testEnvironment = activeEnvironments.isEmpty() ? null : activeEnvironments.get(0);
                 
                 // 执行每个测试用例
                 int passed = 0;
                 int failed = 0;
-                StringBuilder resultDetails = new StringBuilder();
+                List<TestExecutionResult> results = new ArrayList<>();
                 
                 for (TestCase testCase : testCases) {
                     try {
@@ -112,13 +116,13 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                         TestExecutor executor = testExecutorFactory.getExecutor(testCase);
                         
                         // 执行测试
-                        TestExecutionResult result = executor.execute(testCase, targetSystemConfig);
+                        TestExecutionResult result = executor.execute(testCase, testEnvironment);
+                        // 设置测试用例信息
+                        result.setTestCaseId(testCase.getId());
+                        result.setTestCaseName(testCase.getName());
+                        result.setTestType(testCase.getType().name());
                         
-                        // 记录结果
-                        resultDetails.append(String.format("测试用例 '%s': %s (耗时: %d ms)\n", 
-                            testCase.getName(), 
-                            result.isSuccess() ? "通过" : "失败", 
-                            result.getExecutionTime()));
+                        results.add(result);
                         
                         if (result.isSuccess()) {
                             passed++;
@@ -126,8 +130,15 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                             failed++;
                         }
                     } catch (Exception e) {
-                        resultDetails.append(String.format("测试用例 '%s': 执行异常 - %s\n", 
-                            testCase.getName(), e.getMessage()));
+                        // 根据错误信息创建 TestExecutionResult 实例，需确保使用正确的构造函数
+                        TestExecutionResult errorResult = new TestExecutionResult();
+                        errorResult.setSuccess(false);
+                        errorResult.setMessage("执行异常: " + e.getMessage());
+                        errorResult.setTestCaseId(testCase.getId());
+                        errorResult.setTestCaseName(testCase.getName());
+                        errorResult.setTestType(testCase.getType().name());
+                        errorResult.setErrorDetails(e.toString());
+                        results.add(errorResult);
                         failed++;
                     }
                 }
@@ -135,9 +146,16 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                 // 更新执行记录
                 savedExecution.setStatus(TestExecution.ExecutionStatus.COMPLETED);
                 savedExecution.setEndTime(LocalDateTime.now());
+                
+                // 使用Jackson将结果列表转换为JSON
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new JavaTimeModule());
+                mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                String jsonResults = mapper.writeValueAsString(results);
+                
                 savedExecution.setResult(String.format(
-                    "{\"passed\": %d, \"failed\": %d, \"total\": %d, \"details\": \"%s\"}", 
-                    passed, failed, passed + failed, resultDetails.toString().replace("\"", "\\\"")));
+                    "{\"passed\": %d, \"failed\": %d, \"total\": %d, \"results\": %s}", 
+                    passed, failed, passed + failed, jsonResults));
                 
                 testExecutionRepository.save(savedExecution);
                 

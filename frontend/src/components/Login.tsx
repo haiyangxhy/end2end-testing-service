@@ -60,7 +60,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </form>
         <div className="login-info">
           <p>默认用户名: admin</p>
-          <p>默认密码: password</p>
+          <p>默认密码: admin123</p>
         </div>
       </div>
     </div>

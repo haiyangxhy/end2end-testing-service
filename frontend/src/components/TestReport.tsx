@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './TestReport.css';
 
-interface TestReport {
+interface ITestReport {
   id: string;
   executionId: string;
   suiteId: string;
@@ -20,9 +20,11 @@ interface TestReport {
   details: Array<{
     testCaseId?: string;
     testCaseName: string;
+    testType?: string;
     status: string;
-    errorMessage?: string;
     responseTime: number;
+    message?: string;
+    errorDetails?: string;
     startTime?: string;
     endTime?: string;
   }>;
@@ -34,15 +36,11 @@ interface TestReportProps {
 }
 
 const TestReport: React.FC<TestReportProps> = ({ executionId }) => {
-  const [report, setReport] = useState<TestReport | null>(null);
+  const [report, setReport] = useState<ITestReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchReport();
-  }, [executionId]);
-
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -71,7 +69,11 @@ const TestReport: React.FC<TestReportProps> = ({ executionId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [executionId]);
+
+  useEffect(() => {
+    fetchReport();
+  }, [executionId, fetchReport]);
 
   if (loading) {
     return <div className="test-report">加载中...</div>;
@@ -131,20 +133,26 @@ const TestReport: React.FC<TestReportProps> = ({ executionId }) => {
         <h3>详细结果</h3>
         <table className="details-table">
           <thead>
-            <tr>
-              <th>测试用例</th>
-              <th>状态</th>
-              <th>响应时间</th>
-            </tr>
-          </thead>
+              <tr>
+                <th>测试用例</th>
+                <th>测试类型</th>
+                <th>状态</th>
+                <th>响应时间</th>
+                <th>信息</th>
+              </tr>
+            </thead>
           <tbody>
             {report.details.map((detail, index) => (
               <tr key={index}>
                 <td>{detail.testCaseName}</td>
+                <td>{detail.testType || '-'}</td>
                 <td className={detail.status === '通过' ? 'status-passed' : 'status-failed'}>
                   {detail.status}
                 </td>
                 <td>{detail.responseTime}ms</td>
+                <td className="error-message">
+                  {detail.errorDetails || (detail.message || '-')}
+                </td>
               </tr>
             ))}
           </tbody>

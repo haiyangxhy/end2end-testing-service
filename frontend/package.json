@@ -3,19 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "axios": "^1.4.0",
-    "react-router-dom": "^6.14.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.14.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "antd": "^5.8.0",
+    "@ant-design/icons": "^5.1.0",
+    "recharts": "^2.7.0",
+    "moment": "^2.29.4",
+    "lodash": "^4.17.21",
+    "@types/lodash": "^4.14.195",
+    "react-query": "^3.39.3",
+    "react-hot-toast": "^2.4.1",
+    "framer-motion": "^10.16.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "set NODE_OPTIONS=--no-deprecation && craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -35,5 +44,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "craco": "^0.0.3",
+    "customize-cra": "^1.0.0"
   }
 }

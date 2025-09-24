@@ -23,15 +23,12 @@ public class TestCase {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false)
+    @Column(name = "test_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private TestCaseType type;
     
     @Column(columnDefinition = "JSONB")
     private String config;
-    
-    @Column(name = "test_steps", columnDefinition = "TEXT")
-    private String testSteps;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -42,14 +39,13 @@ public class TestCase {
     // Constructors
     public TestCase() {}
     
-    public TestCase(String id, String suiteId, String name, String description, TestCaseType type, String config, String testSteps) {
+    public TestCase(String id, String suiteId, String name, String description, TestCaseType type, String config) {
         this.id = id;
         this.suiteId = suiteId;
         this.name = name;
         this.description = description;
         this.type = type;
         this.config = config;
-        this.testSteps = testSteps;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -101,14 +97,6 @@ public class TestCase {
     
     public void setConfig(String config) {
         this.config = config;
-    }
-    
-    public String getTestSteps() {
-        return testSteps;
-    }
-    
-    public void setTestSteps(String testSteps) {
-        this.testSteps = testSteps;
     }
     
     public LocalDateTime getCreatedAt() {

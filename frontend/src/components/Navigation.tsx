@@ -1,55 +1,67 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Menu } from 'antd';
+import {
+  ExperimentOutlined,
+  FileTextOutlined,
+  PlayCircleOutlined,
+  BarChartOutlined,
+  MonitorOutlined,
+  EnvironmentOutlined,
+  KeyOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 import './Navigation.css';
 
 const Navigation: React.FC = () => {
   const location = useLocation();
 
+  const menuItems = [
+    {
+      key: '/test-suites',
+      icon: <ExperimentOutlined />,
+      label: <Link to="/test-suites">测试套件管理</Link>,
+    },
+    {
+      key: '/test-cases',
+      icon: <FileTextOutlined />,
+      label: <Link to="/test-cases">测试用例管理</Link>,
+    },
+    {
+      key: '/execution',
+      icon: <PlayCircleOutlined />,
+      label: <Link to="/execution">测试执行</Link>,
+    },
+    {
+      key: '/reports',
+      icon: <BarChartOutlined />,
+      label: <Link to="/reports">报告中心</Link>,
+    },
+    {
+      key: '/monitoring',
+      icon: <MonitorOutlined />,
+      label: <Link to="/monitoring">监控仪表板</Link>,
+    },
+    {
+      key: '/environments',
+      icon: <EnvironmentOutlined />,
+      label: <Link to="/environments">环境管理</Link>,
+    },
+    {
+      key: '/variables',
+      icon: <KeyOutlined />,
+      label: <Link to="/variables">变量管理</Link>,
+    },
+  ];
+
   return (
     <nav className="navigation">
-      <ul>
-        <li>
-          <Link 
-            to="/test-suites" 
-            className={location.pathname === '/test-suites' || location.pathname === '/' ? 'active' : ''}
-          >
-            测试套件管理
-          </Link>
-        </li>
-        <li>
-          <Link 
-            to="/test-cases" 
-            className={location.pathname === '/test-cases' ? 'active' : ''}
-          >
-            测试用例管理
-          </Link>
-        </li>
-        <li>
-          <Link 
-            to="/execution" 
-            className={location.pathname === '/execution' ? 'active' : ''}
-          >
-            测试执行
-          </Link>
-        </li>
-        <li>
-          <Link 
-            to="/reports" 
-            className={location.pathname === '/reports' ? 'active' : ''}
-          >
-            报告中心
-          </Link>
-        </li>
-        {/* 添加目标系统配置管理链接 */}
-        <li>
-          <Link 
-            to="/target-system-config" 
-            className={location.pathname === '/target-system-config' ? 'active' : ''}
-          >
-            系统配置
-          </Link>
-        </li>
-      </ul>
+      <Menu
+        mode="inline"
+        selectedKeys={[location.pathname]}
+        items={menuItems}
+        className="navigation-menu"
+      />
     </nav>
   );
 };

@@ -1,0 +1,40 @@
+# Docker环境专用配置文件
+server:
+  port: 8180
+
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+    url: jdbc:postgresql://postgres:5432/testplatform
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate.temp.use_jdbc_metadata_defaults: false
+  
+  flyway:
+    enabled: false
+  
+  data:
+    mongodb:
+      uri: mongodb://root:mongodb@mongodb:27017/testplatform
+  
+  security:
+    jwt:
+      secret: mySecretKey
+      expiration: 86400000 # 24 hours
+
+logging:
+  level:
+    com.testplatform: INFO
+    org.springframework.boot: INFO
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO

@@ -11,6 +11,7 @@ interface TestCase {
   description: string;
   type: 'API' | 'UI' | 'BUSINESS';
   config: string;
+  testSteps: string;
   createdAt: string;
   updatedAt: string;
 }

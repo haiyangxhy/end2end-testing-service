@@ -21,7 +21,7 @@ public class TestSuite {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false)
+    @Column(name = "suite_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private TestSuiteType type;
     
@@ -32,7 +32,7 @@ public class TestSuite {
     private LocalDateTime updatedAt;
     
     @ElementCollection
-    @CollectionTable(name = "test_suite_test_cases", joinColumns = @JoinColumn(name = "test_suite_id"))
+    @CollectionTable(name = "test_suite_cases", joinColumns = @JoinColumn(name = "suite_id"))
     @Column(name = "test_case_id")
     private List<String> testCases;
     

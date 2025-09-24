@@ -16,18 +16,23 @@ interface TestReport {
     startTime: string;
     endTime: string;
   };
-  details: ReportDetail[];
+  details: IReportDetail[];
   createdAt: string;
 }
 
-interface ReportDetail {
+interface IReportDetail {
   testCaseId: string;
   testCaseName: string;
+  testType?: string;
   status: string;
+  message?: string;
   errorMessage: string;
+  errorDetails?: string;
   responseTime: number;
   startTime: string;
   endTime: string;
+  timestamp?: string;
+  metadata?: string;
 }
 
 interface ReportDetailProps {
@@ -109,10 +114,11 @@ const ReportDetail: React.FC<ReportDetailProps> = ({ report, onBack }) => {
             <tr>
               <th>测试用例</th>
               <th>状态</th>
+              <th>测试类型</th>
               <th>响应时间</th>
               <th>开始时间</th>
               <th>结束时间</th>
-              <th>错误信息</th>
+              <th>信息</th>
             </tr>
           </thead>
           <tbody>
@@ -124,10 +130,16 @@ const ReportDetail: React.FC<ReportDetailProps> = ({ report, onBack }) => {
                     {detail.status}
                   </span>
                 </td>
+                <td>{detail.testType || '-'}</td>
                 <td>{detail.responseTime}ms</td>
                 <td>{formatTime(detail.startTime)}</td>
                 <td>{formatTime(detail.endTime)}</td>
-                <td className="error-message">{detail.errorMessage}</td>
+                <td className="error-message">
+                  {detail.errorMessage || (detail.message || '-')}
+                  {detail.errorDetails && (
+                    <div className="error-details">{detail.errorDetails}</div>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -1,0 +1,46 @@
+---
+description: 描述项目环境配置和运行规则
+globs: 
+alwaysApply: true
+---
+# 项目环境规则 #
+## Java环境配置 ##
+- 默认JDK: JDK 8 (系统默认)
+- 项目使用JDK: JDK 11
+- JDK安装路径: C:\Program Files\Java\
+- 可用JDK版本: JDK 8, JDK 11, JDK 17, JDK 21
+## Maven配置 ##
+- Maven已配置环境变量，可直接使用 mvn 命令
+- Maven安装路径: C:\maven\maven-3.9.4
+## 编译和运行规则 ##
+- 不要修改项目JDK版本 (保持JDK 11)
+- 不要修改系统默认JDK (保持JDK 8)
+- 编译时必须设置JAVA_HOME为JDK 11
+- 运行时必须设置JAVA_HOME为JDK 11
+- **重要：所有Maven命令都必须在backend目录下执行！**
+## 正确的编译和运行命令 ##
+
+```bash
+# PowerShell中设置JDK 11环境
+$env:JAVA_HOME="C:\Program Files\Java\jdk-11"
+
+# 切换到backend目录（必须！）
+cd backend
+
+# 编译项目
+mvn clean compile
+
+# 运行项目
+mvn spring-boot:run
+
+# 打包项目
+mvn clean package
+```
+
+## 重要提醒 ##
+- 所有Maven相关命令（mvn clean, mvn compile, mvn spring-boot:run等）都必须在backend目录下执行
+- 项目根目录下没有pom.xml文件，只有backend目录下有
+- 如果忘记切换目录，会出现"No plugin found for prefix 'spring-boot'"错误
+
+## 特别重要 ##
+- 不要运行和启动前后端项目，只需给出启动命令，不需要执行

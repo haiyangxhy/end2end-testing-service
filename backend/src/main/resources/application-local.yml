@@ -1,0 +1,37 @@
+server:
+  port: 8180
+
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testplatform
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  
+  flyway:
+    enabled: false
+  
+  # MongoDB removed - using PostgreSQL only
+  
+  security:
+    jwt:
+      secret: myVerySecureSecretKeyForJWTTokenGenerationThatIsLongEnoughForHMAC-SHA256Algorithm
+      expiration: 86400000 # 24 hours
+
+logging:
+  level:
+    com.testplatform: DEBUG
+    org.springframework.boot: INFO
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: DEBUG
