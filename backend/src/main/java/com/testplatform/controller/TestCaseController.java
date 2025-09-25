@@ -43,13 +43,7 @@ public class TestCaseController {
         }
     }
     
-    @GetMapping("/suite/{suiteId}")
-    public ResponseEntity<List<TestCase>> getTestCasesBySuiteId(@PathVariable String suiteId) {
-        logger.info("Getting test cases by suite ID: {}", suiteId);
-        List<TestCase> testCases = testCaseService.getTestCasesBySuiteId(suiteId);
-        logger.info("Found {} test cases for suite ID: {}", testCases.size(), suiteId);
-        return new ResponseEntity<>(testCases, HttpStatus.OK);
-    }
+    // 移除getTestCasesBySuiteId方法，因为现在通过TestSuiteCase关联
     
     @PostMapping
     public ResponseEntity<TestCase> createTestCase(@RequestBody TestCase testCase) {
@@ -78,6 +72,32 @@ public class TestCaseController {
     @GetMapping("/type/{type}")
     public ResponseEntity<List<TestCase>> getTestCasesByType(@PathVariable TestCase.TestCaseType type) {
         List<TestCase> testCases = testCaseService.getTestCasesByType(type);
+        return new ResponseEntity<>(testCases, HttpStatus.OK);
+    }
+    
+    @GetMapping("/priority/{priority}")
+    public ResponseEntity<List<TestCase>> getTestCasesByPriority(@PathVariable TestCase.Priority priority) {
+        List<TestCase> testCases = testCaseService.getTestCasesByPriority(priority);
+        return new ResponseEntity<>(testCases, HttpStatus.OK);
+    }
+    
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<TestCase>> getTestCasesByStatus(@PathVariable TestCase.Status status) {
+        List<TestCase> testCases = testCaseService.getTestCasesByStatus(status);
+        return new ResponseEntity<>(testCases, HttpStatus.OK);
+    }
+    
+    @GetMapping("/active")
+    public ResponseEntity<List<TestCase>> getActiveTestCases() {
+        List<TestCase> testCases = testCaseService.getActiveTestCases();
+        return new ResponseEntity<>(testCases, HttpStatus.OK);
+    }
+    
+    @GetMapping("/type/{type}/active/{isActive}")
+    public ResponseEntity<List<TestCase>> getTestCasesByTypeAndActive(
+            @PathVariable TestCase.TestCaseType type, 
+            @PathVariable Boolean isActive) {
+        List<TestCase> testCases = testCaseService.getTestCasesByTypeAndActive(type, isActive);
         return new ResponseEntity<>(testCases, HttpStatus.OK);
     }
 }

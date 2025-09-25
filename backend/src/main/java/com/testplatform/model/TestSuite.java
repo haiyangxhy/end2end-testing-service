@@ -31,10 +31,9 @@ public class TestSuite {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
-    @ElementCollection
-    @CollectionTable(name = "test_suite_cases", joinColumns = @JoinColumn(name = "suite_id"))
-    @Column(name = "test_case_id")
-    private List<String> testCases;
+    @OneToMany(mappedBy = "suiteId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("executionOrder ASC")
+    private List<TestSuiteCase> testSuiteCases;
     
     // Constructors
     public TestSuite() {}
@@ -97,12 +96,45 @@ public class TestSuite {
         this.updatedAt = updatedAt;
     }
     
-    public List<String> getTestCases() {
-        return testCases;
+    public List<TestSuiteCase> getTestSuiteCases() {
+        return testSuiteCases;
     }
     
-    public void setTestCases(List<String> testCases) {
-        this.testCases = testCases;
+    public void setTestSuiteCases(List<TestSuiteCase> testSuiteCases) {
+        this.testSuiteCases = testSuiteCases;
+    }
+    
+    /**
+     * 获取测试用例ID列表（向后兼容）
+     */
+    public List<String> getTestCases() {
+        if (testSuiteCases == null) {
+            return null;
+        }
+        return testSuiteCases.stream()
+                .map(TestSuiteCase::getTestCaseId)
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    /**
+     * 设置测试用例ID列表（向后兼容）
+     */
+    public void setTestCases(List<String> testCaseIds) {
+        if (testCaseIds == null) {
+            this.testSuiteCases = null;
+            return;
+        }
+        
+        this.testSuiteCases = new java.util.ArrayList<>();
+        for (int i = 0; i < testCaseIds.size(); i++) {
+            TestSuiteCase testSuiteCase = new TestSuiteCase();
+            testSuiteCase.setId(java.util.UUID.randomUUID().toString());
+            testSuiteCase.setSuiteId(this.id);
+            testSuiteCase.setTestCaseId(testCaseIds.get(i));
+            testSuiteCase.setExecutionOrder(i + 1);
+            testSuiteCase.setIsEnabled(true);
+            this.testSuiteCases.add(testSuiteCase);
+        }
     }
     
     @PrePersist

@@ -36,6 +36,9 @@ public class TestExecutionServiceImpl implements TestExecutionService {
     private TestEnvironmentRepository testEnvironmentRepository;
     
     @Autowired
+    private TestSuiteService testSuiteService;
+    
+    @Autowired
     private TestExecutorFactory testExecutorFactory;
     
     @Autowired
@@ -98,8 +101,8 @@ public class TestExecutionServiceImpl implements TestExecutionService {
         // 异步执行测试
         new Thread(() -> {
             try {
-                // 获取测试套件中的所有测试用例
-                List<TestCase> testCases = testCaseRepository.findBySuiteId(suiteId);
+                // 获取测试套件中的所有测试用例（按优先级和执行顺序排序）
+                List<TestCase> testCases = testSuiteService.getOrderedTestCases(suiteId);
                 
                 // 获取启用的测试环境
                 List<TestEnvironment> activeEnvironments = testEnvironmentRepository.findByIsActiveTrueOrderByCreatedAtDesc();

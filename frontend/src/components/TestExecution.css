@@ -1,18 +1,133 @@
 .test-execution {
-  padding: 20px;
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
 }
 
-.header {
-  margin-bottom: 20px;
-}
-
-.execution-content {
+.page-header {
   display: flex;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 4px;
 }
 
+.execution-control-card,
+.execution-stats-card,
+.execution-history-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.execution-control {
+  padding: 16px 0;
+}
+
+.suite-selection {
+  margin-bottom: 16px;
+}
+
+.suite-list {
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suite-item {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.suite-item:hover {
+  border-color: #1890ff;
+  background: #f0f8ff;
+}
+
+.suite-item.selected {
+  border-color: #1890ff;
+  background: #e6f7ff;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.execution-actions {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.current-execution {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+}
+
+.execution-info {
+  margin-top: 8px;
+}
+
+.execution-stats-card .ant-statistic {
+  text-align: center;
+}
+
+.execution-stats-card .ant-statistic-title {
+  font-size: 14px;
+  color: #666;
+}
+
+.execution-stats-card .ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.execution-history-card .ant-list-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.execution-history-card .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.execution-history-card .ant-list-item-meta-avatar {
+  margin-right: 16px;
+}
+
+.execution-history-card .ant-list-item-meta-title {
+  margin-bottom: 8px;
+}
+
+.execution-history-card .ant-list-item-meta-description {
+  margin-bottom: 0;
+}
+
+/* 响应式设计 */
 @media (max-width: 768px) {
-  .execution-content {
+  .test-execution {
+    padding: 16px;
+  }
+  
+  .page-header {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .suite-list {
+    max-height: 150px;
+  }
+  
+  .execution-actions {
+    text-align: left;
+  }
+  
+  .execution-actions .ant-space {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

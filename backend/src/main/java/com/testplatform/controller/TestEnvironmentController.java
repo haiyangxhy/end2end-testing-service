@@ -1,7 +1,9 @@
 package com.testplatform.controller;
 
 import com.testplatform.model.TestEnvironment;
+import com.testplatform.model.User;
 import com.testplatform.service.TestEnvironmentService;
+import com.testplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,22 +25,20 @@ public class TestEnvironmentController {
 
     @Autowired
     private TestEnvironmentService testEnvironmentService;
+    
+    @Autowired
+    private UserService userService;
 
     /**
-     * 从Authentication中获取用户ID
+     * 从认证信息中获取用户ID
      */
     private String getUserIdFromAuthentication(Authentication authentication) {
-        // 这里需要根据实际的认证实现来获取用户ID
-        // 暂时使用用户名作为ID，后续需要根据实际需求调整
         String username = authentication.getName();
-        
-        // 简单的映射：admin -> admin-001
-        if ("admin".equals(username)) {
-            return "admin-001";
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户不存在: " + username);
         }
-        
-        // 如果用户名不是admin，返回用户名本身（假设用户名就是ID）
-        return username;
+        return user.getId();
     }
 
     /**
@@ -201,6 +201,21 @@ public class TestEnvironmentController {
             response.put("connected", isConnected);
             response.put("message", isConnected ? "连接成功" : "连接失败");
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /**
+     * 全面测试环境连接（包括API、UI、数据库和认证）
+     */
+    @PostMapping("/{id}/test-full-connection")
+    public ResponseEntity<?> testFullEnvironmentConnection(@PathVariable String id) {
+        try {
+            com.testplatform.model.TestConnectionResult result = testEnvironmentService.testFullEnvironmentConnection(id);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());

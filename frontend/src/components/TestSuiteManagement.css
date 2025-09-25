@@ -1,23 +1,66 @@
 .test-suite-management {
-  padding: 20px;
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
 }
 
-.header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 0 4px;
 }
 
-.create-btn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
+.test-suite-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
-.create-btn:hover {
-  background-color: #0069d9;
+.test-suite-filters {
+  margin-bottom: 16px;
+}
+
+/* 移除.test-suite-stats样式 */
+
+/* 移除.stat-item样式 */
+
+.test-suite-table {
+  margin-top: 16px;
+}
+
+.test-suite-table .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+.test-suite-table .ant-table-tbody > tr:hover > td {
+  background-color: #f5f5f5;
+}
+
+.test-suite-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.test-suite-form .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .test-suite-management {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .test-suite-filters .ant-col {
+    margin-bottom: 8px;
+  }
+  
+  /* 移除.test-suite-stats .ant-col样式 */
 }

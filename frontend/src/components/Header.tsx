@@ -8,7 +8,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onLogout }) => {
   return (
     <header className="App-header">
-      <h1>端到端系统测试平台</h1>
+      <h1 className="header-title">端到端系统测试平台</h1>
       <div className="user-info">
         <span>管理员</span>
         <button className="logout-btn" onClick={onLogout}>退出</button>

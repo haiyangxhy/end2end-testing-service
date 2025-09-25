@@ -120,8 +120,12 @@ const EnvironmentManagement: React.FC = () => {
   // 处理验证环境
   const handleValidate = async (id: string) => {
     try {
-      await environmentAPI.validate(id);
-      message.success('环境验证成功');
+      const res = await environmentAPI.validate(id);
+      if(res.data.valid){
+        message.success('环境验证成功');
+      }else{
+        message.error(res.data.message);
+      }
     } catch (error) {
       message.error('环境验证失败');
       console.error('环境验证失败:', error);

@@ -34,10 +34,7 @@ public class TestCaseServiceImpl implements TestCaseService {
         return testCaseRepository.findById(id);
     }
     
-    @Override
-    public List<TestCase> getTestCasesBySuiteId(String suiteId) {
-        return testCaseRepository.findBySuiteId(suiteId);
-    }
+    // 移除getTestCasesBySuiteId方法，因为现在通过TestSuiteCase关联
     
     @Override
     public TestCase createTestCase(TestCase testCase) {
@@ -71,9 +68,20 @@ public class TestCaseServiceImpl implements TestCaseService {
     
     @Override
     public TestCase updateTestCase(String id, TestCase testCase) {
-        testCase.setId(id);
-        testCase.setUpdatedAt(LocalDateTime.now());
-        return testCaseRepository.save(testCase);
+        // 先获取现有的测试用例以保留created_at
+        Optional<TestCase> existingTestCaseOpt = testCaseRepository.findById(id);
+        if (existingTestCaseOpt.isPresent()) {
+            TestCase existingTestCase = existingTestCaseOpt.get();
+            
+            // 保留原有的created_at
+            testCase.setId(id);
+            testCase.setCreatedAt(existingTestCase.getCreatedAt());
+            testCase.setUpdatedAt(LocalDateTime.now());
+            
+            return testCaseRepository.save(testCase);
+        } else {
+            throw new RuntimeException("测试用例不存在: " + id);
+        }
     }
     
     @Override
@@ -84,5 +92,25 @@ public class TestCaseServiceImpl implements TestCaseService {
     @Override
     public List<TestCase> getTestCasesByType(TestCase.TestCaseType type) {
         return testCaseRepository.findByType(type);
+    }
+    
+    @Override
+    public List<TestCase> getTestCasesByPriority(TestCase.Priority priority) {
+        return testCaseRepository.findByPriority(priority);
+    }
+    
+    @Override
+    public List<TestCase> getTestCasesByStatus(TestCase.Status status) {
+        return testCaseRepository.findByStatus(status);
+    }
+    
+    @Override
+    public List<TestCase> getActiveTestCases() {
+        return testCaseRepository.findByIsActive(true);
+    }
+    
+    @Override
+    public List<TestCase> getTestCasesByTypeAndActive(TestCase.TestCaseType type, Boolean isActive) {
+        return testCaseRepository.findByTypeAndIsActive(type, isActive);
     }
 }

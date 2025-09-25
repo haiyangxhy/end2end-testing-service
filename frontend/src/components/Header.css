@@ -1,25 +1,32 @@
 .App-header {
   background-color: #282c34;
-  padding: 20px;
+  padding: 8px 16px; /* 进一步减少padding */
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.App-header .header-title {
+  margin: 0;
+  font-size: 18px; /* 减小标题字体大小 */
+  font-weight: 500;
+}
+
 .user-info {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .logout-btn {
   background-color: #ff4d4d;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 4px 10px; /* 进一步减少按钮padding */
   border-radius: 4px;
   cursor: pointer;
+  font-size: 13px; /* 减小按钮字体大小 */
 }
 
 .logout-btn:hover {

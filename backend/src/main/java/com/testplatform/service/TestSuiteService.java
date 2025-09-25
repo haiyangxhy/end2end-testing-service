@@ -1,6 +1,7 @@
 package com.testplatform.service;
 
 import com.testplatform.model.TestSuite;
+import com.testplatform.model.TestCase;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,4 +13,5 @@ public interface TestSuiteService {
     TestSuite updateTestSuite(String id, TestSuite testSuite);
     void deleteTestSuite(String id);
     List<TestSuite> getTestSuitesByType(TestSuite.TestSuiteType type);
+    List<TestCase> getOrderedTestCases(String suiteId);
 }

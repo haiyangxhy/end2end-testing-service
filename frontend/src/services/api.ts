@@ -69,6 +69,7 @@ export const testExecutionAPI = {
   getAll: () => api.get('/test-executions'),
   getById: (id: string) => api.get(`/test-executions/${id}`),
   create: (data: any) => api.post('/test-executions', data),
+  execute: (suiteId: string) => api.post(`/test-executions/execute/${suiteId}`),
   start: (id: string) => api.post(`/test-executions/${id}/start`),
   stop: (id: string) => api.post(`/test-executions/${id}/stop`),
   getStatus: (id: string) => api.get(`/test-executions/${id}/status`),

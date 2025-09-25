@@ -21,32 +21,45 @@ export interface TestCase extends BaseEntity {
   description?: string;
   type: 'API' | 'UI' | 'BUSINESS';
   config: string;
-  suiteId: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  tags?: string[];
+  status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
+  tags?: string;
   isActive: boolean;
+  testSteps?: string;
+  expectedResult?: string;
+}
+
+// 测试套件用例关联类型
+export interface TestSuiteCase extends BaseEntity {
+  id: string;
+  suiteId: string;
+  testCaseId: string;
+  testCase?: TestCase; // 可选的测试用例详情，用于前端显示
+  executionOrder: number;
+  isEnabled: boolean;
 }
 
 // 测试套件相关类型
 export interface TestSuite extends BaseEntity {
   name: string;
   description?: string;
-  type: 'API' | 'UI' | 'BUSINESS' | 'MIXED';
-  testCaseIds: string[];
-  isActive: boolean;
-  schedule?: string;
+  type: 'API' | 'UI' | 'BUSINESS';
+  testCases: string[]; // 向后兼容
+  testSuiteCases?: TestSuiteCase[]; // 新的关联关系
 }
 
 // 测试执行相关类型
 export interface TestExecution extends BaseEntity {
   suiteId: string;
+  testSuiteName: string;
   testCaseId?: string;
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
-  startTime?: string;
+  startTime: string;
   endTime?: string;
   result?: string;
   errorMessage?: string;
   duration?: number;
+  progress?: number;
 }
 
 // 测试报告相关类型
@@ -54,7 +67,15 @@ export interface TestReport extends BaseEntity {
   executionId: string;
   suiteId: string;
   name: string;
-  summary: ReportSummary;
+  status: 'PASSED' | 'FAILED' | 'SKIPPED' | 'RUNNING';
+  totalTests: number;
+  passedTests: number;
+  failedTests: number;
+  skippedTests: number;
+  passRate: number;
+  averageResponseTime: number;
+  startTime: string;
+  endTime: string;
   details: ReportDetail[];
 }
 
@@ -223,9 +244,8 @@ export interface TestCaseForm {
 export interface TestSuiteForm {
   name: string;
   description?: string;
-  type: 'API' | 'UI' | 'BUSINESS' | 'MIXED';
-  testCaseIds: string[];
-  schedule?: string;
+  type: 'API' | 'UI' | 'BUSINESS';
+  testCases: string[];
 }
 
 export interface EnvironmentForm {

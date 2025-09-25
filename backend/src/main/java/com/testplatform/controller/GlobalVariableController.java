@@ -1,7 +1,9 @@
 package com.testplatform.controller;
 
 import com.testplatform.model.GlobalVariable;
+import com.testplatform.model.User;
 import com.testplatform.service.GlobalVariableService;
+import com.testplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,21 @@ public class GlobalVariableController {
 
     @Autowired
     private GlobalVariableService globalVariableService;
+    
+    @Autowired
+    private UserService userService;
+
+    /**
+     * 从认证信息中获取用户ID
+     */
+    private String getUserIdFromAuthentication(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户不存在: " + username);
+        }
+        return user.getId();
+    }
 
     /**
      * 获取所有变量
@@ -96,7 +113,8 @@ public class GlobalVariableController {
     public ResponseEntity<?> createVariable(@Valid @RequestBody GlobalVariable variable, 
                                             Authentication authentication) {
         try {
-            String createdBy = authentication.getName();
+            // 从认证信息中获取用户ID，而不是用户名
+            String createdBy = getUserIdFromAuthentication(authentication);
             GlobalVariable createdVariable = globalVariableService.createVariable(variable, createdBy);
             return ResponseEntity.ok(createdVariable);
         } catch (Exception e) {
@@ -113,7 +131,7 @@ public class GlobalVariableController {
     public ResponseEntity<?> createVariables(@Valid @RequestBody List<GlobalVariable> variables, 
                                              Authentication authentication) {
         try {
-            String createdBy = authentication.getName();
+            String createdBy = getUserIdFromAuthentication(authentication);
             List<GlobalVariable> createdVariables = globalVariableService.createVariables(variables, createdBy);
             return ResponseEntity.ok(createdVariables);
         } catch (Exception e) {
@@ -131,7 +149,7 @@ public class GlobalVariableController {
                                             @Valid @RequestBody GlobalVariable variable,
                                             Authentication authentication) {
         try {
-            String updatedBy = authentication.getName();
+            String updatedBy = getUserIdFromAuthentication(authentication);
             GlobalVariable updatedVariable = globalVariableService.updateVariable(id, variable, updatedBy);
             return ResponseEntity.ok(updatedVariable);
         } catch (Exception e) {
@@ -207,7 +225,7 @@ public class GlobalVariableController {
                 return ResponseEntity.badRequest().body(error);
             }
 
-            String createdBy = authentication.getName();
+            String createdBy = getUserIdFromAuthentication(authentication);
             List<GlobalVariable> copiedVariables = globalVariableService.copyVariablesToEnvironment(
                 sourceEnvironmentId, targetEnvironmentId, createdBy);
 

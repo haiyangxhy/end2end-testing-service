@@ -1,4 +1,4 @@
-.test-case-management {
+.test-suite-case-management {
   padding: 24px;
   background-color: #f5f5f5;
   min-height: 100vh;
@@ -12,43 +12,39 @@
   padding: 0 4px;
 }
 
-.test-case-card {
+.test-suite-case-card {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
 }
 
-.test-case-filters {
+.execution-order-info {
+  padding: 16px;
+  background: #f0f8ff;
+  border-radius: 6px;
+  border: 1px solid #d6e4ff;
   margin-bottom: 16px;
 }
 
-/* 移除.test-case-stats样式 */
-
-/* 移除.stat-item样式 */
-
-.test-case-table {
+.test-suite-case-table {
   margin-top: 16px;
 }
 
-.test-case-table .ant-table-thead > tr > th {
+.test-suite-case-table .ant-table-thead > tr > th {
   background-color: #fafafa;
   font-weight: 600;
 }
 
-.test-case-table .ant-table-tbody > tr:hover > td {
+.test-suite-case-table .ant-table-tbody > tr:hover > td {
   background-color: #f5f5f5;
 }
 
-.test-case-form .ant-form-item {
-  margin-bottom: 16px;
-}
-
-.test-case-form .ant-form-item-label > label {
-  font-weight: 500;
+.add-test-case-form {
+  padding: 16px 0;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .test-case-management {
+  .test-suite-case-management {
     padding: 16px;
   }
   
@@ -57,10 +53,4 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
-  .test-case-filters .ant-col {
-    margin-bottom: 8px;
-  }
-  
-  /* 移除.test-case-stats .ant-col样式 */
 }

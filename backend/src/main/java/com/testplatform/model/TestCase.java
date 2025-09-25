@@ -14,8 +14,7 @@ public class TestCase {
     @Id
     private String id;
     
-    @Column(name = "suite_id", nullable = false)
-    private String suiteId;
+    // 移除suiteId字段，因为测试用例现在通过test_suite_cases表关联
     
     @Column(nullable = false)
     private String name;
@@ -27,8 +26,28 @@ public class TestCase {
     @Enumerated(EnumType.STRING)
     private TestCaseType type;
     
-    @Column(columnDefinition = "JSONB")
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Priority priority = Priority.MEDIUM;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.ACTIVE;
+    
+    @Column(columnDefinition = "TEXT")
     private String config;
+    
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+    
+    @Column(name = "test_steps", columnDefinition = "TEXT")
+    private String testSteps;
+    
+    @Column(name = "expected_result", columnDefinition = "TEXT")
+    private String expectedResult;
+    
+    @Column(name = "tags", columnDefinition = "TEXT")
+    private String tags;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -39,12 +58,12 @@ public class TestCase {
     // Constructors
     public TestCase() {}
     
-    public TestCase(String id, String suiteId, String name, String description, TestCaseType type, String config) {
+    public TestCase(String id, String name, String description, TestCaseType type, Priority priority, String config) {
         this.id = id;
-        this.suiteId = suiteId;
         this.name = name;
         this.description = description;
         this.type = type;
+        this.priority = priority;
         this.config = config;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -59,13 +78,7 @@ public class TestCase {
         this.id = id;
     }
     
-    public String getSuiteId() {
-        return suiteId;
-    }
-    
-    public void setSuiteId(String suiteId) {
-        this.suiteId = suiteId;
-    }
+    // 移除suiteId相关的getter/setter
     
     public String getName() {
         return name;
@@ -115,6 +128,54 @@ public class TestCase {
         this.updatedAt = updatedAt;
     }
     
+    public Priority getPriority() {
+        return priority;
+    }
+    
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+    
+    public Status getStatus() {
+        return status;
+    }
+    
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+    
+    public Boolean getIsActive() {
+        return isActive;
+    }
+    
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+    
+    public String getTestSteps() {
+        return testSteps;
+    }
+    
+    public void setTestSteps(String testSteps) {
+        this.testSteps = testSteps;
+    }
+    
+    public String getExpectedResult() {
+        return expectedResult;
+    }
+    
+    public void setExpectedResult(String expectedResult) {
+        this.expectedResult = expectedResult;
+    }
+    
+    public String getTags() {
+        return tags;
+    }
+    
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+    
     @PrePersist
     public void generateId() {
         logger.info("generateId() called, current id: {}", this.id);
@@ -128,5 +189,13 @@ public class TestCase {
     
     public enum TestCaseType {
         API, UI, BUSINESS
+    }
+    
+    public enum Priority {
+        LOW, MEDIUM, HIGH, CRITICAL
+    }
+    
+    public enum Status {
+        ACTIVE, INACTIVE, DRAFT
     }
 }

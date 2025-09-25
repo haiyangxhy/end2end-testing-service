@@ -15,7 +15,7 @@
 
 .App-header {
   background-color: #282c34;
-  padding: 20px;
+  padding: 8px 16px; /* 与Header.css保持一致 */
   color: white;
   display: flex;
   justify-content: space-between;
@@ -24,12 +24,12 @@
 
 .main-container {
   display: flex;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 56px); /* 调整容器最小高度以适应更小的Header */
 }
 
 .content {
   flex: 1;
-  padding: 20px;
+  padding: 16px; /* 稍微减少内容区域的padding */
 }
 
 .App-link {

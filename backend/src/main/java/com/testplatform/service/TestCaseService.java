@@ -8,9 +8,12 @@ import java.util.Optional;
 public interface TestCaseService {
     List<TestCase> getAllTestCases();
     Optional<TestCase> getTestCaseById(String id);
-    List<TestCase> getTestCasesBySuiteId(String suiteId);
     TestCase createTestCase(TestCase testCase);
     TestCase updateTestCase(String id, TestCase testCase);
     void deleteTestCase(String id);
     List<TestCase> getTestCasesByType(TestCase.TestCaseType type);
+    List<TestCase> getTestCasesByPriority(TestCase.Priority priority);
+    List<TestCase> getTestCasesByStatus(TestCase.Status status);
+    List<TestCase> getActiveTestCases();
+    List<TestCase> getTestCasesByTypeAndActive(TestCase.TestCaseType type, Boolean isActive);
 }
