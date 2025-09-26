@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import Header from './components/Header';
-import Navigation from './components/Navigation';
-import TestSuiteManagement from './components/TestSuiteManagement';
-import TestCaseManagement from './components/TestCaseManagement';
-import TestExecution from './components/TestExecution';
-import ReportDashboard from './components/ReportDashboard';
-import MonitoringDashboard from './components/MonitoringDashboard';
-import EnvironmentManagement from './components/EnvironmentManagement';
-import VariableManagement from './components/VariableManagement';
-import ScheduledTaskManagement from './components/ScheduledTaskManagement';
-import Login from './components/Login';
+import Header from './components/common/Header';
+import Navigation from './components/common/Navigation';
+import TestSuiteManagement from './components/testsuite/TestSuiteManagement';
+import TestCaseManagement from './components/testcase/TestCaseManagement';
+import TestExecution from './components/execution/TestExecution';
+import ReportDashboard from './components/report/ReportDashboard';
+import MonitoringDashboard from './components/monitoring/MonitoringDashboard';
+import EnvironmentManagement from './components/management/EnvironmentManagement';
+import VariableManagement from './components/management/VariableManagement';
+import ScheduledTaskManagement from './components/management/ScheduledTaskManagement';
+import Login from './components/common/Login';
 import './App.css';
 
 function App() {

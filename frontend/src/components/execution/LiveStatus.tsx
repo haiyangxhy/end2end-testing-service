@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import TestReport from './TestReport';
+import TestReport from '../report/TestReport';
 import './LiveStatus.css';
 
 interface ExecutionStatus {
