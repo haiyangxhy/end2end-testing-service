@@ -47,7 +47,7 @@ const TestCaseManagement: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCase, setEditingCase] = useState<TestCase | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('');
+  // 移除selectedType状态，测试用例不再有类型字段
   const [selectedPriority, setSelectedPriority] = useState<string>('');
   const [form] = Form.useForm();
 
@@ -70,14 +70,47 @@ const TestCaseManagement: React.FC = () => {
     fetchTestCases();
   }, []);
 
+  // 监听编辑状态变化，设置表单值
+  useEffect(() => {
+    if (editingCase && modalVisible) {
+      // 处理标签数据
+      const tagsArray = editingCase.tags && typeof editingCase.tags === 'string' 
+        ? editingCase.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) 
+        : [];
+      
+      console.log('useEffect - 编辑测试用例 - 原始标签:', editingCase.tags);
+      console.log('useEffect - 编辑测试用例 - 处理后的标签数组:', tagsArray);
+      
+      form.setFieldsValue({
+        name: editingCase.name,
+        description: editingCase.description,
+        priority: editingCase.priority,
+        status: editingCase.status,
+        config: editingCase.config,
+        tags: tagsArray,
+      });
+    }
+  }, [editingCase, modalVisible, form]);
+
   // 处理创建/编辑测试用例
   const handleSubmit = async (values: TestCaseForm) => {
     try {
+      console.log('表单提交数据:', values);
+      console.log('标签字段值:', values.tags);
+      
+      // 处理tags字段：如果是数组则转换为逗号分隔的字符串
+      const processedValues = {
+        ...values,
+        tags: Array.isArray(values.tags) ? values.tags.join(',') : values.tags
+      };
+      
+      console.log('处理后的提交数据:', processedValues);
+      
       if (editingCase) {
-        await testCaseAPI.update(editingCase.id, values);
+        await testCaseAPI.update(editingCase.id, processedValues);
         message.success('测试用例更新成功');
       } else {
-        await testCaseAPI.create(values);
+        await testCaseAPI.create(processedValues);
         message.success('测试用例创建成功');
       }
       setModalVisible(false);
@@ -102,30 +135,12 @@ const TestCaseManagement: React.FC = () => {
     }
   };
 
-  // 处理执行测试用例
-  const handleExecute = async (id: string) => {
-    try {
-      // 这里应该调用执行API
-      message.success('测试用例执行已启动');
-      console.log('执行测试用例:', id);
-    } catch (error) {
-      message.error('测试用例执行失败');
-      console.error('测试用例执行失败:', error);
-    }
-  };
+  // 移除单个测试用例执行功能，避免数据污染和系统状态混乱
+  // 测试用例应该通过测试套件统一执行，确保环境隔离和执行顺序
 
   // 打开编辑模态框
   const openEditModal = (testCase: TestCase) => {
     setEditingCase(testCase);
-    form.setFieldsValue({
-      name: testCase.name,
-      description: testCase.description,
-      type: testCase.type,
-      priority: testCase.priority,
-      status: testCase.status,
-      config: testCase.config,
-      tags: testCase.tags && typeof testCase.tags === 'string' ? testCase.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [],
-    });
     setModalVisible(true);
   };
 
@@ -152,24 +167,11 @@ const TestCaseManagement: React.FC = () => {
   const filteredTestCases = testCases.filter(testCase => {
     const matchesSearch = testCase.name.toLowerCase().includes(searchText.toLowerCase()) ||
                          testCase.description?.toLowerCase().includes(searchText.toLowerCase());
-    const matchesType = !selectedType || testCase.type === selectedType;
     const matchesPriority = !selectedPriority || testCase.priority === selectedPriority;
-    return matchesSearch && matchesType && matchesPriority;
+    return matchesSearch && matchesPriority;
   });
 
-  // 获取类型图标
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'API':
-        return <ApiOutlined />;
-      case 'UI':
-        return <DesktopOutlined />;
-      case 'BUSINESS':
-        return <SettingOutlined />;
-      default:
-        return <FileTextOutlined />;
-    }
-  };
+  // 移除getTypeIcon函数，测试用例不再有类型字段
 
   // 获取优先级颜色
   const getPriorityColor = (priority: string) => {
@@ -193,30 +195,11 @@ const TestCaseManagement: React.FC = () => {
       title: '用例名称',
       dataIndex: 'name',
       key: 'name',
-      render: (text: string, record: TestCase) => (
-        <Space>
-          {getTypeIcon(record.type)}
-          <Text strong>{text}</Text>
-        </Space>
+      render: (text: string) => (
+        <Text strong>{text}</Text>
       ),
     },
-    {
-      title: '类型',
-      dataIndex: 'type',
-      key: 'type',
-      render: (type: string) => {
-        const typeColors = {
-          API: 'blue',
-          UI: 'green',
-          BUSINESS: 'orange',
-        };
-        return (
-          <Tag color={typeColors[type as keyof typeof typeColors]}>
-            {type}
-          </Tag>
-        );
-      },
-    },
+    // 移除类型列，测试用例类型由所属的测试套件决定
     {
       title: '优先级',
       dataIndex: 'priority',
@@ -288,13 +271,7 @@ const TestCaseManagement: React.FC = () => {
               onClick={() => openEditModal(record)}
             />
           </Tooltip>
-          <Tooltip title="执行">
-            <Button
-              type="text"
-              icon={<PlayCircleOutlined />}
-              onClick={() => handleExecute(record.id)}
-            />
-          </Tooltip>
+          {/* 移除单个测试用例执行按钮，避免数据污染风险 */}
           <Popconfirm
             title="确定要删除这个测试用例吗？"
             onConfirm={() => handleDelete(record.id)}
@@ -332,20 +309,8 @@ const TestCaseManagement: React.FC = () => {
       <Card className="test-case-card">
         <div className="test-case-filters">
           <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={12} md={6}>
-              <Select
-                placeholder="选择类型"
-                value={selectedType || undefined}
-                onChange={setSelectedType}
-                style={{ width: '100%' }}
-                allowClear
-              >
-                <Option value="API">API</Option>
-                <Option value="UI">UI</Option>
-                <Option value="BUSINESS">业务</Option>
-              </Select>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
+            {/* 移除类型选择器，测试用例不再有类型字段 */}
+            <Col xs={24} sm={12} md={8}>
               <Select
                 placeholder="选择优先级"
                 value={selectedPriority || undefined}
@@ -375,7 +340,7 @@ const TestCaseManagement: React.FC = () => {
                 </Button>
                 <Button onClick={() => {
                   setSearchText('');
-                  setSelectedType('');
+                  // 移除setSelectedType，测试用例不再有类型字段
                   setSelectedPriority('');
                   fetchTestCases();
                 }}>
@@ -423,7 +388,7 @@ const TestCaseManagement: React.FC = () => {
           className="test-case-form"
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={24}>
               <Form.Item
                 name="name"
                 label="用例名称"
@@ -433,19 +398,6 @@ const TestCaseManagement: React.FC = () => {
                 ]}
               >
                 <Input placeholder="请输入用例名称" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="type"
-                label="用例类型"
-                rules={[{ required: true, message: '请选择用例类型' }]}
-              >
-                <Select placeholder="请选择用例类型">
-                  <Option value="API">API</Option>
-                  <Option value="UI">UI</Option>
-                  <Option value="BUSINESS">业务</Option>
-                </Select>
               </Form.Item>
             </Col>
           </Row>
@@ -480,13 +432,24 @@ const TestCaseManagement: React.FC = () => {
                   return '';
                 }}
                 getValueProps={(value) => {
+                  console.log('getValueProps 被调用，输入值:', value, '类型:', typeof value);
+                  
                   // 将字符串转换为数组用于显示
-                  if (!value || typeof value !== 'string') {
+                  if (!value) {
+                    console.log('getValueProps - 值为空，返回空数组');
                     return { value: [] };
                   }
-                  return {
-                    value: value.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag)
-                  };
+                  if (typeof value === 'string') {
+                    const result = value.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
+                    console.log('getValueProps - 字符串转换结果:', result);
+                    return { value: result };
+                  }
+                  if (Array.isArray(value)) {
+                    console.log('getValueProps - 已经是数组，直接返回:', value);
+                    return { value };
+                  }
+                  console.log('getValueProps - 未知类型，返回空数组');
+                  return { value: [] };
                 }}
               >
                 <Select

@@ -3,6 +3,7 @@ package com.testplatform.service;
 import com.testplatform.model.TestExecution;
 import com.testplatform.model.TestCase;
 import com.testplatform.model.TestEnvironment;
+import com.testplatform.model.TestSuite;
 import com.testplatform.repository.TestExecutionRepository;
 import com.testplatform.repository.TestCaseRepository;
 import com.testplatform.repository.TestEnvironmentRepository;
@@ -101,12 +102,21 @@ public class TestExecutionServiceImpl implements TestExecutionService {
         // 异步执行测试
         new Thread(() -> {
             try {
+                // 获取测试套件信息
+                Optional<TestSuite> testSuiteOptional = testSuiteService.getTestSuiteById(suiteId);
+                if (testSuiteOptional.isEmpty()) {
+                    throw new RuntimeException("测试套件不存在: " + suiteId);
+                }
+                TestSuite testSuite = testSuiteOptional.get();
                 // 获取测试套件中的所有测试用例（按优先级和执行顺序排序）
                 List<TestCase> testCases = testSuiteService.getOrderedTestCases(suiteId);
                 
                 // 获取启用的测试环境
                 List<TestEnvironment> activeEnvironments = testEnvironmentRepository.findByIsActiveTrueOrderByCreatedAtDesc();
                 TestEnvironment testEnvironment = activeEnvironments.isEmpty() ? null : activeEnvironments.get(0);
+                
+                // 根据测试套件类型获取执行器
+                TestExecutor executor = testExecutorFactory.getExecutor(testSuite);
                 
                 // 执行每个测试用例
                 int passed = 0;
@@ -115,15 +125,12 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                 
                 for (TestCase testCase : testCases) {
                     try {
-                        // 获取相应的测试执行器
-                        TestExecutor executor = testExecutorFactory.getExecutor(testCase);
-                        
-                        // 执行测试
+                        // 执行测试（使用测试套件的执行器）
                         TestExecutionResult result = executor.execute(testCase, testEnvironment);
                         // 设置测试用例信息
                         result.setTestCaseId(testCase.getId());
                         result.setTestCaseName(testCase.getName());
-                        result.setTestType(testCase.getType().name());
+                        result.setTestType(testSuite.getType().name()); // 使用测试套件的类型
                         
                         results.add(result);
                         
@@ -139,7 +146,7 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                         errorResult.setMessage("执行异常: " + e.getMessage());
                         errorResult.setTestCaseId(testCase.getId());
                         errorResult.setTestCaseName(testCase.getName());
-                        errorResult.setTestType(testCase.getType().name());
+                        errorResult.setTestType(testSuite.getType().name()); // 使用测试套件的类型
                         errorResult.setErrorDetails(e.toString());
                         results.add(errorResult);
                         failed++;
@@ -156,12 +163,12 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                 mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
                 String jsonResults = mapper.writeValueAsString(results);
                 
-                savedExecution.setResult(String.format(
-                    "{\"passed\": %d, \"failed\": %d, \"total\": %d, \"results\": %s}", 
+                savedExecution.setExecutionLog(String.format(
+                    "{\"passed\": %d, \"failed\": %d, \"total\": %d, \"results\": %s}",
                     passed, failed, passed + failed, jsonResults));
-                
+
                 testExecutionRepository.save(savedExecution);
-                
+
                 // 生成测试报告
                 try {
                     testReportGenerationService.generateReport(savedExecution.getId());
@@ -173,7 +180,7 @@ public class TestExecutionServiceImpl implements TestExecutionService {
                 // 更新执行记录为失败状态
                 savedExecution.setStatus(TestExecution.ExecutionStatus.FAILED);
                 savedExecution.setEndTime(LocalDateTime.now());
-                savedExecution.setResult("{\"error\": \"" + e.getMessage().replace("\"", "\\\"") + "\"}");
+                savedExecution.setExecutionLog("{\"error\": \"" + e.getMessage().replace("\"", "\\\"") + "\"}");
                 
                 testExecutionRepository.save(savedExecution);
             }

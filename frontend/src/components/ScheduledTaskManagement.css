@@ -1,0 +1,63 @@
+.scheduled-task-management {
+  padding: 24px;
+}
+
+.scheduled-task-management .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.scheduled-task-management .title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.scheduled-task-management .title-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.scheduled-task-management .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+.scheduled-task-management .ant-table-tbody > tr:hover > td {
+  background-color: #f5f5f5;
+}
+
+.scheduled-task-management .ant-tag {
+  margin: 0;
+}
+
+.scheduled-task-management .ant-btn-link {
+  padding: 4px 8px;
+  height: auto;
+}
+
+.scheduled-task-management .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.scheduled-task-management .ant-modal-body {
+  padding: 24px;
+}
+
+.scheduled-task-management .ant-select {
+  width: 100%;
+}
+
+.scheduled-task-management .ant-input,
+.scheduled-task-management .ant-input-number {
+  width: 100%;
+}
+
+.scheduled-task-management .ant-space {
+  width: 100%;
+  justify-content: flex-end;
+}

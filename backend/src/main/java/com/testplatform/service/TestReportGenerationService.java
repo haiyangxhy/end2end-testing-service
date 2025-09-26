@@ -51,8 +51,8 @@ public class TestReportGenerationService {
         TestReport.ReportSummary summary = new TestReport.ReportSummary();
         List<TestReport.ReportDetail> details = new ArrayList<>();
         
-        if (execution.getResult() != null && !execution.getResult().isEmpty()) {
-            parseExecutionResult(execution.getResult(), summary, details);
+        if (execution.getExecutionLog() != null && !execution.getExecutionLog().isEmpty()) {
+            parseExecutionResult(execution.getExecutionLog(), summary, details);
         }
         
         // 设置时间信息
@@ -375,7 +375,7 @@ public class TestReportGenerationService {
             detail.setTestCaseId(execution.getId());
             detail.setTestCaseName("测试执行 - " + execution.getId());
             detail.setStatus(execution.getStatus() == TestExecution.ExecutionStatus.COMPLETED ? "PASSED" : "FAILED");
-            detail.setMessage(execution.getResult());
+            detail.setMessage(execution.getExecutionLog());
             detail.setTimestamp(execution.getStartTime() != null ? execution.getStartTime().toString() : "");
             
             if (execution.getStartTime() != null && execution.getEndTime() != null) {

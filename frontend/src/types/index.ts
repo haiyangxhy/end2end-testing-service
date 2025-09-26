@@ -19,7 +19,7 @@ export interface User extends BaseEntity {
 export interface TestCase extends BaseEntity {
   name: string;
   description?: string;
-  type: 'API' | 'UI' | 'BUSINESS';
+  // 移除type字段，测试用例类型由所属的测试套件决定
   config: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
@@ -235,10 +235,10 @@ export interface RegisterForm {
 export interface TestCaseForm {
   name: string;
   description?: string;
-  type: 'API' | 'UI' | 'BUSINESS';
+  // 移除type字段，测试用例类型由所属的测试套件决定
   config: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  tags?: string[];
+  tags?: string; // 统一为string类型，与TestCase接口保持一致
 }
 
 export interface TestSuiteForm {
@@ -246,6 +246,26 @@ export interface TestSuiteForm {
   description?: string;
   type: 'API' | 'UI' | 'BUSINESS';
   testCases: string[];
+}
+
+export interface ScheduledTask extends BaseEntity {
+  name: string;
+  description?: string;
+  suiteId: string;
+  environmentId: string;
+  cronExpression: string;
+  isActive: boolean;
+  lastRun?: string;
+  nextRun?: string;
+}
+
+export interface ScheduledTaskForm {
+  name: string;
+  description?: string;
+  suiteId: string;
+  environmentId: string;
+  cronExpression: string;
+  isActive: boolean;
 }
 
 export interface EnvironmentForm {

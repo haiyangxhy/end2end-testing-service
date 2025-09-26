@@ -69,11 +69,7 @@ public class TestCaseController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     
-    @GetMapping("/type/{type}")
-    public ResponseEntity<List<TestCase>> getTestCasesByType(@PathVariable TestCase.TestCaseType type) {
-        List<TestCase> testCases = testCaseService.getTestCasesByType(type);
-        return new ResponseEntity<>(testCases, HttpStatus.OK);
-    }
+    // 移除按类型查询的API，测试用例不再有类型字段
     
     @GetMapping("/priority/{priority}")
     public ResponseEntity<List<TestCase>> getTestCasesByPriority(@PathVariable TestCase.Priority priority) {
@@ -93,11 +89,5 @@ public class TestCaseController {
         return new ResponseEntity<>(testCases, HttpStatus.OK);
     }
     
-    @GetMapping("/type/{type}/active/{isActive}")
-    public ResponseEntity<List<TestCase>> getTestCasesByTypeAndActive(
-            @PathVariable TestCase.TestCaseType type, 
-            @PathVariable Boolean isActive) {
-        List<TestCase> testCases = testCaseService.getTestCasesByTypeAndActive(type, isActive);
-        return new ResponseEntity<>(testCases, HttpStatus.OK);
-    }
+    // 移除按类型和激活状态查询的API，测试用例不再有类型字段
 }

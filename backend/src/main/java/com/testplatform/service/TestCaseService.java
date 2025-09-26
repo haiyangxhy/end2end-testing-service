@@ -11,9 +11,9 @@ public interface TestCaseService {
     TestCase createTestCase(TestCase testCase);
     TestCase updateTestCase(String id, TestCase testCase);
     void deleteTestCase(String id);
-    List<TestCase> getTestCasesByType(TestCase.TestCaseType type);
+    // 移除按类型查询方法，测试用例不再有类型字段
     List<TestCase> getTestCasesByPriority(TestCase.Priority priority);
     List<TestCase> getTestCasesByStatus(TestCase.Status status);
     List<TestCase> getActiveTestCases();
-    List<TestCase> getTestCasesByTypeAndActive(TestCase.TestCaseType type, Boolean isActive);
+    // 移除按类型和激活状态查询方法，测试用例不再有类型字段
 }

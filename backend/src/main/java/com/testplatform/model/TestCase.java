@@ -22,9 +22,7 @@ public class TestCase {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(name = "test_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private TestCaseType type;
+    // 移除type字段，测试用例类型由所属的测试套件决定
     
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -49,6 +47,9 @@ public class TestCase {
     @Column(name = "tags", columnDefinition = "TEXT")
     private String tags;
     
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -58,13 +59,23 @@ public class TestCase {
     // Constructors
     public TestCase() {}
     
-    public TestCase(String id, String name, String description, TestCaseType type, Priority priority, String config) {
+    public TestCase(String id, String name, String description, Priority priority, String config) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.type = type;
         this.priority = priority;
         this.config = config;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    public TestCase(String id, String name, String description, Priority priority, String config, String createdBy) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.priority = priority;
+        this.config = config;
+        this.createdBy = createdBy;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -96,13 +107,7 @@ public class TestCase {
         this.description = description;
     }
     
-    public TestCaseType getType() {
-        return type;
-    }
-    
-    public void setType(TestCaseType type) {
-        this.type = type;
-    }
+    // 移除type相关的getter/setter方法
     
     public String getConfig() {
         return config;
@@ -118,6 +123,14 @@ public class TestCase {
     
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
     
     public LocalDateTime getUpdatedAt() {
@@ -187,9 +200,7 @@ public class TestCase {
         }
     }
     
-    public enum TestCaseType {
-        API, UI, BUSINESS
-    }
+    // 移除TestCaseType枚举，测试用例类型由所属的测试套件决定
     
     public enum Priority {
         LOW, MEDIUM, HIGH, CRITICAL

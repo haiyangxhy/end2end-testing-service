@@ -2,10 +2,17 @@ package com.testplatform.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.testplatform.model.TestCase;
+import com.testplatform.model.TestCaseExecution;
 import com.testplatform.repository.TestCaseRepository;
+import com.testplatform.repository.TestCaseExecutionRepository;
+import com.testplatform.repository.TestSuiteCaseRepository;
+import com.testplatform.repository.TaskExecutionHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +28,15 @@ public class TestCaseServiceImpl implements TestCaseService {
     
     @Autowired
     private TestCaseRepository testCaseRepository;
+    
+    @Autowired
+    private TestCaseExecutionRepository testCaseExecutionRepository;
+    
+    @Autowired
+    private TestSuiteCaseRepository testSuiteCaseRepository;
+    
+    @Autowired
+    private TaskExecutionHistoryRepository taskExecutionHistoryRepository;
     
     private ObjectMapper objectMapper = new ObjectMapper();
     
@@ -56,6 +72,11 @@ public class TestCaseServiceImpl implements TestCaseService {
             logger.info("Manually generated ID: {}", newId);
         }
         
+        // 设置创建者
+        String currentUserId = getCurrentUserId();
+        testCase.setCreatedBy(currentUserId);
+        logger.info("Set createdBy to: {}", currentUserId);
+        
         testCase.setCreatedAt(LocalDateTime.now());
         testCase.setUpdatedAt(LocalDateTime.now());
         
@@ -68,14 +89,15 @@ public class TestCaseServiceImpl implements TestCaseService {
     
     @Override
     public TestCase updateTestCase(String id, TestCase testCase) {
-        // 先获取现有的测试用例以保留created_at
+        // 先获取现有的测试用例以保留created_at和created_by
         Optional<TestCase> existingTestCaseOpt = testCaseRepository.findById(id);
         if (existingTestCaseOpt.isPresent()) {
             TestCase existingTestCase = existingTestCaseOpt.get();
             
-            // 保留原有的created_at
+            // 保留原有的created_at和created_by
             testCase.setId(id);
             testCase.setCreatedAt(existingTestCase.getCreatedAt());
+            testCase.setCreatedBy(existingTestCase.getCreatedBy());
             testCase.setUpdatedAt(LocalDateTime.now());
             
             return testCaseRepository.save(testCase);
@@ -85,14 +107,39 @@ public class TestCaseServiceImpl implements TestCaseService {
     }
     
     @Override
+    @Transactional
     public void deleteTestCase(String id) {
+        logger.info("开始删除测试用例: {}", id);
+        
+        // 1. 检查是否存在测试用例执行记录
+        List<TestCaseExecution> executions = testCaseExecutionRepository.findByTestCaseId(id);
+        if (!executions.isEmpty()) {
+            // 检查是否存在任务执行历史记录
+            List<String> executionIds = executions.stream()
+                    .map(TestCaseExecution::getExecutionId)
+                    .collect(java.util.stream.Collectors.toList());
+            
+            if (taskExecutionHistoryRepository.existsByExecutionIdIn(executionIds)) {
+                throw new RuntimeException("无法删除测试用例，存在关联的任务执行历史记录。请先删除相关的执行记录。");
+            }
+            
+            // 如果没有历史记录，可以删除执行记录
+            logger.info("删除测试用例执行记录: {}", id);
+            testCaseExecutionRepository.deleteByTestCaseId(id);
+        }
+        
+        // 2. 删除测试套件关联记录
+        logger.info("删除测试套件关联记录: {}", id);
+        testSuiteCaseRepository.deleteByTestCaseId(id);
+        
+        // 3. 最后删除测试用例本身
+        logger.info("删除测试用例: {}", id);
         testCaseRepository.deleteById(id);
+        
+        logger.info("测试用例删除完成: {}", id);
     }
     
-    @Override
-    public List<TestCase> getTestCasesByType(TestCase.TestCaseType type) {
-        return testCaseRepository.findByType(type);
-    }
+    // 移除按类型查询方法实现，测试用例不再有类型字段
     
     @Override
     public List<TestCase> getTestCasesByPriority(TestCase.Priority priority) {
@@ -109,8 +156,42 @@ public class TestCaseServiceImpl implements TestCaseService {
         return testCaseRepository.findByIsActive(true);
     }
     
-    @Override
-    public List<TestCase> getTestCasesByTypeAndActive(TestCase.TestCaseType type, Boolean isActive) {
-        return testCaseRepository.findByTypeAndIsActive(type, isActive);
+    // 移除按类型和激活状态查询方法实现，测试用例不再有类型字段
+    
+    /**
+     * 获取当前用户ID
+     */
+    private String getCurrentUserId() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                // 从认证信息中获取用户ID
+                Object principal = authentication.getPrincipal();
+                if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                    String username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+                    // 根据用户名映射到用户ID
+                    return mapUsernameToUserId(username);
+                } else if (principal instanceof String) {
+                    return mapUsernameToUserId((String) principal);
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("无法获取当前用户ID，使用默认值", e);
+        }
+        
+        // 如果无法获取当前用户，返回默认的管理员用户ID
+        return "admin-001";
+    }
+    
+    /**
+     * 将用户名映射到用户ID
+     */
+    private String mapUsernameToUserId(String username) {
+        // 简单的映射逻辑，实际应用中可以从数据库查询
+        if ("admin".equals(username)) {
+            return "admin-001";
+        }
+        // 其他用户暂时返回默认值
+        return "admin-001";
     }
 }

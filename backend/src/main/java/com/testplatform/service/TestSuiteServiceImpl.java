@@ -1,12 +1,19 @@
 package com.testplatform.service;
 
+import com.testplatform.model.TestExecution;
 import com.testplatform.model.TestSuite;
 import com.testplatform.model.TestSuiteCase;
 import com.testplatform.model.TestCase;
 import com.testplatform.repository.TestSuiteRepository;
 import com.testplatform.repository.TestSuiteCaseRepository;
 import com.testplatform.repository.TestCaseRepository;
+import com.testplatform.repository.TestExecutionRepository;
+import com.testplatform.repository.TaskExecutionHistoryRepository;
+import com.testplatform.repository.ScheduledTaskRepository;
+import com.testplatform.model.ScheduledTask;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.transaction.Transactional;
 
 @Service
 public class TestSuiteServiceImpl implements TestSuiteService {
@@ -29,6 +38,15 @@ public class TestSuiteServiceImpl implements TestSuiteService {
     
     @Autowired
     private TestCaseRepository testCaseRepository;
+    
+    @Autowired
+    private TestExecutionRepository testExecutionRepository;
+    
+    @Autowired
+    private TaskExecutionHistoryRepository taskExecutionHistoryRepository;
+
+    @Autowired
+    private ScheduledTaskRepository scheduledTaskRepository;
     
     @Override
     public List<TestSuite> getAllTestSuites() {
@@ -60,12 +78,32 @@ public class TestSuiteServiceImpl implements TestSuiteService {
             logger.info("Manually generated ID: {}", newId);
         }
         
+        // 设置创建者
+        String currentUserId = getCurrentUserId();
+        testSuite.setCreatedBy(currentUserId);
+        logger.info("Set createdBy to: {}", currentUserId);
+        
         testSuite.setCreatedAt(LocalDateTime.now());
         testSuite.setUpdatedAt(LocalDateTime.now());
+        
+        // 处理测试用例关联关系
+        if (testSuite.getTestSuiteCases() != null && !testSuite.getTestSuiteCases().isEmpty()) {
+            for (TestSuiteCase testSuiteCase : testSuite.getTestSuiteCases()) {
+                // 确保设置正确的suiteId
+                testSuiteCase.setId(java.util.UUID.randomUUID().toString());
+                testSuiteCase.setSuiteId(testSuite.getId());
+                testSuiteCase.setCreatedAt(LocalDateTime.now());
+            }
+        }
         
         logger.info("Saving test suite with ID: {}", testSuite.getId());
         TestSuite savedTestSuite = testSuiteRepository.save(testSuite);
         logger.info("Saved test suite, returned ID: {}", savedTestSuite.getId());
+        
+        // 保存测试用例关联关系
+        if (savedTestSuite.getTestSuiteCases() != null && !savedTestSuite.getTestSuiteCases().isEmpty()) {
+            testSuiteCaseRepository.saveAll(savedTestSuite.getTestSuiteCases());
+        }
         
         return savedTestSuite;
     }
@@ -80,17 +118,15 @@ public class TestSuiteServiceImpl implements TestSuiteService {
         
         TestSuite existingTestSuite = existingTestSuiteOpt.get();
         
-        // 保留原有的created_at
+        // 保留原有的created_at和created_by
         testSuite.setId(id);
         testSuite.setCreatedAt(existingTestSuite.getCreatedAt());
+        testSuite.setCreatedBy(existingTestSuite.getCreatedBy());
         testSuite.setUpdatedAt(LocalDateTime.now());
         
         // 先删除现有的关联关系
         testSuiteCaseRepository.deleteBySuiteId(id);
-        
-        // 保存测试套件
-        TestSuite savedTestSuite = testSuiteRepository.save(testSuite);
-        
+
         // 重新创建关联关系（如果有的话）
         if (testSuite.getTestSuiteCases() != null && !testSuite.getTestSuiteCases().isEmpty()) {
             for (TestSuiteCase testSuiteCase : testSuite.getTestSuiteCases()) {
@@ -98,16 +134,54 @@ public class TestSuiteServiceImpl implements TestSuiteService {
                 testSuiteCase.setId(java.util.UUID.randomUUID().toString());
                 testSuiteCase.setSuiteId(id);
                 testSuiteCase.setCreatedAt(LocalDateTime.now());
-                testSuiteCaseRepository.save(testSuiteCase);
             }
         }
+        
+        // 保存测试套件
+        TestSuite savedTestSuite = testSuiteRepository.save(testSuite);
+
+        testSuiteCaseRepository.saveAll(testSuite.getTestSuiteCases());
         
         return savedTestSuite;
     }
     
     @Override
+    @Transactional
     public void deleteTestSuite(String id) {
+        logger.info("开始删除测试套件: {}", id);
+        
+        // 1. 检查是否存在测试执行记录
+        List<TestExecution> executions = testExecutionRepository.findBySuiteId(id);
+        if (!executions.isEmpty()) {
+            // 检查是否存在任务执行历史记录
+            List<String> executionIds = executions.stream()
+                    .map(TestExecution::getId)
+                    .collect(java.util.stream.Collectors.toList());
+            
+            if (taskExecutionHistoryRepository.existsByExecutionIdIn(executionIds)) {
+                throw new RuntimeException("无法删除测试套件，存在关联的任务执行历史记录。请先删除相关的执行记录。");
+            }
+            
+            // 如果没有历史记录，可以删除执行记录
+            logger.info("删除测试执行记录: {}", id);
+            testExecutionRepository.deleteBySuiteId(id);
+        }
+        
+        // 2. 检查是否存在定时任务记录
+        List<ScheduledTask> scheduledTasks = scheduledTaskRepository.findBySuiteId(id);
+        if (!scheduledTasks.isEmpty()) {
+            throw new RuntimeException("无法删除测试套件，存在关联的定时任务记录。请先删除相关的定时任务。");
+        }
+
+        // 3. 删除测试套件关联记录
+        logger.info("删除测试套件关联记录: {}", id);
+        testSuiteCaseRepository.deleteBySuiteId(id);
+
+        // 4. 最后删除测试套件本身
+        logger.info("删除测试套件: {}", id);
         testSuiteRepository.deleteById(id);
+        
+        logger.info("测试套件删除完成: {}", id);
     }
     
     @Override
@@ -175,5 +249,42 @@ public class TestSuiteServiceImpl implements TestSuiteService {
             case "LOW": return 4;
             default: return 5;
         }
+    }
+    
+    /**
+     * 获取当前用户ID
+     */
+    private String getCurrentUserId() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                // 从认证信息中获取用户ID
+                Object principal = authentication.getPrincipal();
+                if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                    String username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+                    // 根据用户名映射到用户ID
+                    return mapUsernameToUserId(username);
+                } else if (principal instanceof String) {
+                    return mapUsernameToUserId((String) principal);
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("无法获取当前用户ID，使用默认值", e);
+        }
+        
+        // 如果无法获取当前用户，返回默认的管理员用户ID
+        return "admin-001";
+    }
+    
+    /**
+     * 将用户名映射到用户ID
+     */
+    private String mapUsernameToUserId(String username) {
+        // 简单的映射逻辑，实际应用中可以从数据库查询
+        if ("admin".equals(username)) {
+            return "admin-001";
+        }
+        // 其他用户暂时返回默认值
+        return "admin-001";
     }
 }

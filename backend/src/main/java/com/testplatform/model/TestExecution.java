@@ -27,16 +27,47 @@ public class TestExecution {
     @Column(name = "end_time")
     private LocalDateTime endTime;
     
-    @Column(columnDefinition = "JSONB")
-    private String result;
+    @Column(name = "environment_id", nullable = false)
+    private String environmentId;
+    
+    @Column(name = "execution_type", nullable = false)
+    private String executionType = "MANUAL";
+    
+    @Column(name = "triggered_by", nullable = false)
+    private String triggeredBy;
+    
+    @Column(name = "duration_seconds")
+    private Integer durationSeconds;
+    
+    @Column(name = "total_tests")
+    private Integer totalTests = 0;
+    
+    @Column(name = "passed_tests")
+    private Integer passedTests = 0;
+    
+    @Column(name = "failed_tests")
+    private Integer failedTests = 0;
+    
+    @Column(name = "skipped_tests")
+    private Integer skippedTests = 0;
+    
+    @Column(name = "execution_log", columnDefinition = "TEXT")
+    private String executionLog;
+    
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
     
     // Constructors
-    public TestExecution() {}
+    public TestExecution() {
+        this.id = UUID.randomUUID().toString();
+        this.createdAt = LocalDateTime.now();
+    }
     
     public TestExecution(String id, String suiteId, ExecutionStatus status) {
         this.id = id;
         this.suiteId = suiteId;
         this.status = status;
+        this.createdAt = LocalDateTime.now();
     }
     
     // Getters and Setters
@@ -80,12 +111,84 @@ public class TestExecution {
         this.endTime = endTime;
     }
     
-    public String getResult() {
-        return result;
+    public String getEnvironmentId() {
+        return environmentId;
     }
     
-    public void setResult(String result) {
-        this.result = result;
+    public void setEnvironmentId(String environmentId) {
+        this.environmentId = environmentId;
+    }
+    
+    public String getExecutionType() {
+        return executionType;
+    }
+    
+    public void setExecutionType(String executionType) {
+        this.executionType = executionType;
+    }
+    
+    public String getTriggeredBy() {
+        return triggeredBy;
+    }
+    
+    public void setTriggeredBy(String triggeredBy) {
+        this.triggeredBy = triggeredBy;
+    }
+    
+    public Integer getDurationSeconds() {
+        return durationSeconds;
+    }
+    
+    public void setDurationSeconds(Integer durationSeconds) {
+        this.durationSeconds = durationSeconds;
+    }
+    
+    public Integer getTotalTests() {
+        return totalTests;
+    }
+    
+    public void setTotalTests(Integer totalTests) {
+        this.totalTests = totalTests;
+    }
+    
+    public Integer getPassedTests() {
+        return passedTests;
+    }
+    
+    public void setPassedTests(Integer passedTests) {
+        this.passedTests = passedTests;
+    }
+    
+    public Integer getFailedTests() {
+        return failedTests;
+    }
+    
+    public void setFailedTests(Integer failedTests) {
+        this.failedTests = failedTests;
+    }
+    
+    public Integer getSkippedTests() {
+        return skippedTests;
+    }
+    
+    public void setSkippedTests(Integer skippedTests) {
+        this.skippedTests = skippedTests;
+    }
+    
+    public String getExecutionLog() {
+        return executionLog;
+    }
+    
+    public void setExecutionLog(String executionLog) {
+        this.executionLog = executionLog;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
     
     @PrePersist
@@ -100,6 +203,6 @@ public class TestExecution {
     }
     
     public enum ExecutionStatus {
-        PENDING, RUNNING, COMPLETED, FAILED
+        PENDING, RUNNING, COMPLETED, FAILED, CANCELLED
     }
 }

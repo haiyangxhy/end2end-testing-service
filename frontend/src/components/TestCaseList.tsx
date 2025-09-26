@@ -27,7 +27,7 @@ const TestCaseList: React.FC<TestCaseListProps> = ({ testCases, onEdit, onDelete
           <tr>
             <th>名称</th>
             <th>描述</th>
-            <th>类型</th>
+            {/* 移除类型列，测试用例不再有类型字段 */}
             <th>创建时间</th>
             <th>操作</th>
           </tr>
@@ -37,11 +37,7 @@ const TestCaseList: React.FC<TestCaseListProps> = ({ testCases, onEdit, onDelete
             <tr key={testCase.id}>
               <td>{testCase.name}</td>
               <td>{testCase.description}</td>
-              <td>
-                <span className={`type-badge type-${testCase.type.toLowerCase()}`}>
-                  {testCase.type}
-                </span>
-              </td>
+              {/* 移除类型列，测试用例不再有类型字段 */}
               <td>{new Date(testCase.createdAt).toLocaleString()}</td>
               <td>
                 <button className="edit-btn" onClick={() => onEdit(testCase)}>编辑</button>

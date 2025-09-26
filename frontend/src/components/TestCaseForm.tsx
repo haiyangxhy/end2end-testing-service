@@ -1,28 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './TestCaseForm.css';
-
-interface TestCase {
-  id: string;
-  suiteId: string;
-  name: string;
-  description: string;
-  type: 'API' | 'UI' | 'BUSINESS';
-  config: string;
-  testSteps: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface TestSuite {
-  id: string;
-  name: string;
-  description: string;
-  type: 'API' | 'UI' | 'BUSINESS';
-  createdAt: string;
-  updatedAt: string;
-  testCases: string[];
-}
+import { TestCase, TestSuite } from '../types';
 
 interface TestCaseFormProps {
   testCase: TestCase | null;
@@ -33,22 +12,23 @@ interface TestCaseFormProps {
 const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel }) => {
   const [formData, setFormData] = useState<TestCase>({
     id: '',
-    suiteId: '',
     name: '',
     description: '',
-    type: 'API',
+    // 移除type字段，测试用例类型由所属的测试套件决定
     config: '',
+    priority: 'MEDIUM' as const,
+    status: 'ACTIVE' as const,
+    isActive: true,
     testSteps: '',
+    expectedResult: '',
+    tags: '',
     createdAt: '',
     updatedAt: ''
   });
   
-  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
+  // 移除testSuites状态，测试用例不再直接关联测试套件
 
-  useEffect(() => {
-    // Fetch test suites from backend
-    fetchTestSuites();
-  }, []);
+  // 移除fetchTestSuites调用，测试用例不再直接关联测试套件
 
   useEffect(() => {
     if (testCase) {
@@ -56,25 +36,7 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
     }
   }, [testCase]);
 
-  const fetchTestSuites = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8180/api/test-suites', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      console.log('Raw response from backend:', response);
-      console.log('Test suites data:', response.data);
-      
-      // 不过滤数据，直接使用后端返回的数据
-      setTestSuites(response.data);
-    } catch (err) {
-      console.error('Failed to fetch test suites:', err);
-      alert('获取测试套件列表失败');
-    }
-  };
+  // 移除fetchTestSuites函数，测试用例不再直接关联测试套件
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -86,12 +48,6 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate suiteId
-    if (!formData.suiteId) {
-      alert('请选择关联的测试套件');
-      return;
-    }
     
     // Validate JSON format for config field
     if (formData.config.trim() !== '') {
@@ -110,23 +66,7 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
     <div className="test-case-form">
       <h3>{formData.id ? '编辑测试用例' : '创建测试用例'}</h3>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="suiteId">关联测试套件:</label>
-          <select
-            id="suiteId"
-            name="suiteId"
-            value={formData.suiteId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">请选择测试套件</option>
-            {testSuites.map(suite => (
-              <option key={suite.id} value={suite.id}>
-                {suite.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* 移除测试套件选择，测试用例和测试套件通过TestSuiteCase关联表关联 */}
         
         <div className="form-group">
           <label htmlFor="name">名称:</label>
@@ -151,19 +91,7 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
           />
         </div>
         
-        <div className="form-group">
-          <label htmlFor="type">类型:</label>
-          <select
-            id="type"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-          >
-            <option value="API">API测试</option>
-            <option value="UI">UI测试</option>
-            <option value="BUSINESS">业务流程测试</option>
-          </select>
-        </div>
+        {/* 移除类型选择，测试用例类型由所属的测试套件决定 */}
         
         <div className="form-group">
           <label htmlFor="testSteps">测试步骤:</label>

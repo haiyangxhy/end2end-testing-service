@@ -142,4 +142,20 @@ export const targetSystemAPI = {
   testConnection: (id: string) => api.post(`/target-systems/${id}/test-connection`),
 };
 
+// 定时任务相关API
+export const scheduledTaskAPI = {
+  getAll: () => api.get('/scheduled-tasks'),
+  getById: (id: string) => api.get(`/scheduled-tasks/${id}`),
+  create: (data: any) => api.post('/scheduled-tasks', data),
+  update: (id: string, data: any) => api.put(`/scheduled-tasks/${id}`, data),
+  delete: (id: string) => api.delete(`/scheduled-tasks/${id}`),
+  toggle: (id: string, isActive: boolean) => api.put(`/scheduled-tasks/${id}/toggle?isActive=${isActive}`),
+  getBySuiteId: (suiteId: string) => api.get(`/scheduled-tasks/suite/${suiteId}`),
+  getByEnvironmentId: (environmentId: string) => api.get(`/scheduled-tasks/environment/${environmentId}`),
+  getTasksToExecute: () => api.get('/scheduled-tasks/to-execute'),
+  // 获取测试套件和环境列表（用于下拉选择）
+  getTestSuites: () => api.get('/test-suites'),
+  getTestEnvironments: () => api.get('/environments')
+};
+
 export default api;

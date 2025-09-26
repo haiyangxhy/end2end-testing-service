@@ -25,6 +25,9 @@ public class TestSuite {
     @Enumerated(EnumType.STRING)
     private TestSuiteType type;
     
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -78,6 +81,14 @@ public class TestSuite {
     
     public void setType(TestSuiteType type) {
         this.type = type;
+    }
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
     
     public LocalDateTime getCreatedAt() {

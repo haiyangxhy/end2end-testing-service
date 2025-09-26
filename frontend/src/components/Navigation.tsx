@@ -10,6 +10,7 @@ import {
   EnvironmentOutlined,
   KeyOutlined,
   SettingOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import './Navigation.css';
 
@@ -51,6 +52,11 @@ const Navigation: React.FC = () => {
       key: '/variables',
       icon: <KeyOutlined />,
       label: <Link to="/variables">变量管理</Link>,
+    },
+    {
+      key: '/scheduled-tasks',
+      icon: <ClockCircleOutlined />,
+      label: <Link to="/scheduled-tasks">定时任务</Link>,
     },
   ];
 

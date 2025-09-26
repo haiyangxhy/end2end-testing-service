@@ -30,4 +30,12 @@ public interface TestSuiteCaseRepository extends JpaRepository<TestSuiteCase, St
      * 根据套件ID和测试用例ID查找关联记录
      */
     TestSuiteCase findBySuiteIdAndTestCaseId(String suiteId, String testCaseId);
+    
+    /**
+     * 根据测试用例ID删除所有关联记录
+     */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM TestSuiteCase tsc WHERE tsc.testCaseId = :testCaseId")
+    void deleteByTestCaseId(@Param("testCaseId") String testCaseId);
 }

@@ -60,7 +60,7 @@ public class TestResultProcessingService {
         }
         
         execution.setEndTime(LocalDateTime.now());
-        execution.setResult(result.getMessage());
+        execution.setExecutionLog(result.getMessage());
         
         logger.info("更新执行状态: {} - {}", execution.getId(), execution.getStatus());
     }

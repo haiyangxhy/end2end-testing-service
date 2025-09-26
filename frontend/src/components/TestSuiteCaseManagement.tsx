@@ -176,15 +176,7 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
     }
   };
 
-  // 获取类型图标
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'API': return '🔗';
-      case 'UI': return '🖥️';
-      case 'BUSINESS': return '⚙️';
-      default: return '📝';
-    }
-  };
+  // 移除getTypeIcon函数，测试用例不再有类型字段
 
   // 过滤可用的测试用例
   const filteredTestCases = availableTestCases.filter(tc => 
@@ -233,7 +225,6 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
       key: 'testCase',
       render: (testCase: TestCase) => (
         <Space>
-          <span>{getTypeIcon(testCase.type)}</span>
           <Text strong>{testCase.name}</Text>
           <Tag color={getPriorityColor(testCase.priority)}>
             {testCase.priority}
@@ -241,14 +232,7 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
         </Space>
       ),
     },
-    {
-      title: '类型',
-      dataIndex: ['testCase', 'type'],
-      key: 'type',
-      render: (type: string) => (
-        <Tag color="blue">{type}</Tag>
-      ),
-    },
+    // 移除类型列，测试用例不再有类型字段
     {
       title: '优先级',
       dataIndex: ['testCase', 'priority'],
@@ -357,7 +341,6 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
             {filteredTestCases.map(tc => (
               <Option key={tc.id} value={tc.id}>
                 <Space>
-                  <span>{getTypeIcon(tc.type)}</span>
                   <Text>{tc.name}</Text>
                   <Tag color={getPriorityColor(tc.priority)}>
                     {tc.priority}

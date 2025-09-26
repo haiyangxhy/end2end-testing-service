@@ -11,6 +11,7 @@ import ReportDashboard from './components/ReportDashboard';
 import MonitoringDashboard from './components/MonitoringDashboard';
 import EnvironmentManagement from './components/EnvironmentManagement';
 import VariableManagement from './components/VariableManagement';
+import ScheduledTaskManagement from './components/ScheduledTaskManagement';
 import Login from './components/Login';
 import './App.css';
 
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/monitoring" element={<MonitoringDashboard />} />
                     <Route path="/environments" element={<EnvironmentManagement />} />
                     <Route path="/variables" element={<VariableManagement />} />
+                    <Route path="/scheduled-tasks" element={<ScheduledTaskManagement />} />
                   </Routes>
                 </main>
               </div>

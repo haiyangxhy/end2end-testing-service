@@ -30,8 +30,8 @@ import {
   FolderOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { testSuiteAPI } from '../services/api';
-import { TestSuite, TestSuiteForm } from '../types';
+import { testSuiteAPI, testCaseAPI } from '../services/api';
+import { TestSuite, TestSuiteForm, TestCase } from '../types';
 import TestSuiteCaseManagement from './TestSuiteCaseManagement';
 import './TestSuiteManagement.css';
 
@@ -42,6 +42,7 @@ const { TabPane } = Tabs;
 
 const TestSuiteManagement: React.FC = () => {
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingSuite, setEditingSuite] = useState<TestSuite | null>(null);
@@ -65,19 +66,48 @@ const TestSuiteManagement: React.FC = () => {
     }
   };
 
+  // 获取测试用例列表
+  const fetchTestCases = async () => {
+    try {
+      const response = await testCaseAPI.getAll();
+      setTestCases(response.data);
+    } catch (error) {
+      message.error('获取测试用例列表失败');
+      console.error('获取测试用例列表失败:', error);
+    }
+  };
+
   // 初始化数据
   useEffect(() => {
     fetchTestSuites();
+    fetchTestCases();
   }, []);
 
   // 处理创建/编辑测试套件
   const handleSubmit = async (values: TestSuiteForm) => {
     try {
+      // 将testCases数组转换为testSuiteCases格式
+      const testSuiteCases = values.testCases?.map((testCaseId, index) => ({
+        id: '', // 后端会生成
+        suiteId: editingSuite?.id || '', // 创建时为空，更新时使用现有ID
+        testCaseId: testCaseId,
+        executionOrder: index + 1,
+        isEnabled: true,
+        createdAt: new Date().toISOString()
+      })) || [];
+
+      const submitData = {
+        ...values,
+        testSuiteCases: testSuiteCases
+      };
+
+      console.log('提交的测试套件数据:', submitData);
+
       if (editingSuite) {
-        await testSuiteAPI.update(editingSuite.id, values);
+        await testSuiteAPI.update(editingSuite.id, submitData);
         message.success('测试套件更新成功');
       } else {
-        await testSuiteAPI.create(values);
+        await testSuiteAPI.create(submitData);
         message.success('测试套件创建成功');
       }
       setModalVisible(false);
@@ -117,11 +147,15 @@ const TestSuiteManagement: React.FC = () => {
   // 打开编辑模态框
   const openEditModal = (suite: TestSuite) => {
     setEditingSuite(suite);
+    
+    // 从testSuiteCases中提取testCaseId列表
+    const testCaseIds = suite.testSuiteCases?.map(tc => tc.testCaseId) || [];
+    
     form.setFieldsValue({
       name: suite.name,
       description: suite.description,
       type: suite.type,
-      testCases: suite.testCases,
+      testCases: testCaseIds,
     });
     setModalVisible(true);
   };
@@ -433,11 +467,24 @@ const TestSuiteManagement: React.FC = () => {
               mode="multiple"
               placeholder="请选择测试用例"
               style={{ width: '100%' }}
+              loading={loading}
+              showSearch
+              filterOption={(input, option) => {
+                // 直接基于测试用例数据搜索，避免复杂的类型处理
+                const testCaseId = option?.value as string;
+                const testCase = testCases.find(tc => tc.id === testCaseId);
+                if (testCase) {
+                  const searchText = `${testCase.name} ${testCase.priority}`.toLowerCase();
+                  return searchText.includes(input.toLowerCase());
+                }
+                return false;
+              }}
             >
-              {/* 这里应该从API获取可用的测试用例列表 */}
-              <Option value="case-001">测试用例1</Option>
-              <Option value="case-002">测试用例2</Option>
-              <Option value="case-003">测试用例3</Option>
+              {testCases.map((testCase) => (
+                <Option key={testCase.id} value={testCase.id}>
+                  {testCase.name} - {testCase.priority}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>
