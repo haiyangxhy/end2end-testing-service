@@ -6,6 +6,13 @@ spring:
     active: local
   application:
     name: end2end-testing-service
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      write-durations-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    time-zone: UTC
 
 logging:
   level:

@@ -31,8 +31,8 @@ import {
   ExclamationCircleOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
-import { testCaseAPI } from '../services/api';
-import { TestCase, TestSuite, TestSuiteCase } from '../types';
+import { testCaseAPI, testSuiteCaseAPI } from '../../services/api';
+import { TestCase, TestSuite, TestSuiteCase } from '../../types';
 import './TestSuiteCaseManagement.css';
 
 const { Title, Text } = Typography;
@@ -44,12 +44,14 @@ interface TestSuiteCaseManagementProps {
   testSuite: TestSuite;
   onClose: () => void;
   onSave: (testSuiteCases: TestSuiteCase[]) => void;
+  onRefresh?: () => void;
 }
 
 const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
   testSuite,
   onClose,
   onSave,
+  onRefresh,
 }) => {
   const [testSuiteCases, setTestSuiteCases] = useState<TestSuiteCase[]>([]);
   const [availableTestCases, setAvailableTestCases] = useState<TestCase[]>([]);
@@ -69,16 +71,28 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
     }
   };
 
+  // 获取测试套件关联的测试用例
+  const fetchTestSuiteCases = async () => {
+    try {
+      setLoading(true);
+      const response = await testSuiteCaseAPI.getBySuiteIdWithDetails(testSuite.id);
+      setTestSuiteCases(response.data);
+    } catch (error) {
+      message.error('获取测试套件用例失败');
+      console.error('获取测试套件用例失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 初始化数据
   useEffect(() => {
     fetchAvailableTestCases();
-    // 这里应该从后端获取测试套件的测试用例
-    // 暂时使用模拟数据
-    setTestSuiteCases([]);
+    fetchTestSuiteCases();
   }, [testSuite]);
 
   // 添加测试用例到套件
-  const handleAddTestCase = () => {
+  const handleAddTestCase = async () => {
     if (!selectedTestCase) {
       message.warning('请选择要添加的测试用例');
       return;
@@ -96,73 +110,119 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
       return;
     }
 
-    const newTestSuiteCase: TestSuiteCase = {
-      id: `tsc-${Date.now()}`,
-      suiteId: testSuite.id,
-      testCaseId: selectedTestCase,
-      testCase: testCase,
-      executionOrder: testSuiteCases.length + 1,
-      isEnabled: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setTestSuiteCases([...testSuiteCases, newTestSuiteCase]);
-    setSelectedTestCase('');
-    setModalVisible(false);
-    message.success('测试用例添加成功');
+    try {
+      setLoading(true);
+      const response = await testSuiteCaseAPI.addTestCaseToSuite({
+        suiteId: testSuite.id,
+        testCaseId: selectedTestCase
+      });
+      
+      // 重新获取测试套件用例列表
+      await fetchTestSuiteCases();
+      
+      // 通知父组件刷新数据
+      onRefresh?.();
+      
+      setSelectedTestCase('');
+      setModalVisible(false);
+      message.success('测试用例添加成功');
+    } catch (error) {
+      message.error('添加测试用例失败');
+      console.error('添加测试用例失败:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 删除测试用例
-  const handleDeleteTestCase = (id: string) => {
-    setTestSuiteCases(testSuiteCases.filter(tsc => tsc.id !== id));
-    message.success('测试用例删除成功');
+  const handleDeleteTestCase = async (id: string) => {
+    try {
+      setLoading(true);
+      await testSuiteCaseAPI.removeFromSuite(id);
+      
+      // 重新获取测试套件用例列表
+      await fetchTestSuiteCases();
+      
+      // 通知父组件刷新数据
+      onRefresh?.();
+      
+      message.success('测试用例删除成功');
+    } catch (error) {
+      message.error('删除测试用例失败');
+      console.error('删除测试用例失败:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 更新执行顺序
-  const handleUpdateOrder = (id: string, newOrder: number) => {
-    setTestSuiteCases(testSuiteCases.map(tsc => 
-      tsc.id === id ? { ...tsc, executionOrder: newOrder } : tsc
-    ));
+  const handleUpdateOrder = async (id: string, newOrder: number) => {
+    try {
+      await testSuiteCaseAPI.updateExecutionOrder(id, newOrder);
+      
+      // 重新获取测试套件用例列表
+      await fetchTestSuiteCases();
+    } catch (error) {
+      message.error('更新执行顺序失败');
+      console.error('更新执行顺序失败:', error);
+    }
   };
 
   // 上移测试用例
-  const handleMoveUp = (index: number) => {
+  const handleMoveUp = async (index: number) => {
     if (index > 0) {
-      const newTestSuiteCases = [...testSuiteCases];
-      [newTestSuiteCases[index], newTestSuiteCases[index - 1]] = 
-      [newTestSuiteCases[index - 1], newTestSuiteCases[index]];
+      const currentCase = testSuiteCases[index];
+      const previousCase = testSuiteCases[index - 1];
       
-      // 更新执行顺序
-      newTestSuiteCases.forEach((tsc, idx) => {
-        tsc.executionOrder = idx + 1;
-      });
-      
-      setTestSuiteCases(newTestSuiteCases);
+      try {
+        // 交换执行顺序
+        await Promise.all([
+          testSuiteCaseAPI.updateExecutionOrder(currentCase.id, previousCase.executionOrder),
+          testSuiteCaseAPI.updateExecutionOrder(previousCase.id, currentCase.executionOrder)
+        ]);
+        
+        // 重新获取测试套件用例列表
+        await fetchTestSuiteCases();
+      } catch (error) {
+        message.error('移动测试用例失败');
+        console.error('移动测试用例失败:', error);
+      }
     }
   };
 
   // 下移测试用例
-  const handleMoveDown = (index: number) => {
+  const handleMoveDown = async (index: number) => {
     if (index < testSuiteCases.length - 1) {
-      const newTestSuiteCases = [...testSuiteCases];
-      [newTestSuiteCases[index], newTestSuiteCases[index + 1]] = 
-      [newTestSuiteCases[index + 1], newTestSuiteCases[index]];
+      const currentCase = testSuiteCases[index];
+      const nextCase = testSuiteCases[index + 1];
       
-      // 更新执行顺序
-      newTestSuiteCases.forEach((tsc, idx) => {
-        tsc.executionOrder = idx + 1;
-      });
-      
-      setTestSuiteCases(newTestSuiteCases);
+      try {
+        // 交换执行顺序
+        await Promise.all([
+          testSuiteCaseAPI.updateExecutionOrder(currentCase.id, nextCase.executionOrder),
+          testSuiteCaseAPI.updateExecutionOrder(nextCase.id, currentCase.executionOrder)
+        ]);
+        
+        // 重新获取测试套件用例列表
+        await fetchTestSuiteCases();
+      } catch (error) {
+        message.error('移动测试用例失败');
+        console.error('移动测试用例失败:', error);
+      }
     }
   };
 
   // 切换启用状态
-  const handleToggleEnabled = (id: string) => {
-    setTestSuiteCases(testSuiteCases.map(tsc => 
-      tsc.id === id ? { ...tsc, isEnabled: !tsc.isEnabled } : tsc
-    ));
+  const handleToggleEnabled = async (id: string) => {
+    try {
+      await testSuiteCaseAPI.toggleEnabled(id);
+      
+      // 重新获取测试套件用例列表
+      await fetchTestSuiteCases();
+    } catch (error) {
+      message.error('切换启用状态失败');
+      console.error('切换启用状态失败:', error);
+    }
   };
 
   // 获取优先级颜色
@@ -247,10 +307,10 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
       title: '状态',
       dataIndex: 'isEnabled',
       key: 'isEnabled',
-      render: (isEnabled: boolean) => (
+      render: (isEnabled: boolean, record: TestSuiteCase) => (
         <Switch
           checked={isEnabled}
-          onChange={() => handleToggleEnabled(testSuiteCases.find(tsc => tsc.isEnabled === isEnabled)?.id || '')}
+          onChange={() => handleToggleEnabled(record.id)}
         />
       ),
     },
@@ -309,6 +369,7 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
           dataSource={testSuiteCases}
           rowKey="id"
           pagination={false}
+          loading={loading}
           className="test-suite-case-table"
           locale={{ emptyText: <Empty description="暂无测试用例" /> }}
         />
@@ -320,6 +381,7 @@ const TestSuiteCaseManagement: React.FC<TestSuiteCaseManagementProps> = ({
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleAddTestCase}
+        confirmLoading={loading}
         width={600}
       >
         <div className="add-test-case-form">

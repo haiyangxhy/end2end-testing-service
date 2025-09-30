@@ -32,8 +32,8 @@ import {
   FilterOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { testReportAPI } from '../services/api';
-import { TestReport } from '../types';
+import { testReportAPI } from '../../services/api';
+import { TestReport } from '../../types';
 import './ReportDashboard.css';
 import { Dayjs } from 'dayjs';
 

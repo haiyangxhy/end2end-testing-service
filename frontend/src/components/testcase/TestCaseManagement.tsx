@@ -32,8 +32,9 @@ import {
   DesktopOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { testCaseAPI } from '../services/api';
-import { TestCase, TestCaseForm } from '../types';
+import { testCaseAPI, getErrorMessage } from '../../services/api';
+import { TestCase, TestCaseForm, TestCaseConfig } from '../../types';
+import TestCaseConfigTemplates from './TestCaseConfigTemplates';
 import './TestCaseManagement.css';
 
 const { Title, Text } = Typography;
@@ -58,7 +59,8 @@ const TestCaseManagement: React.FC = () => {
       const response = await testCaseAPI.getAll();
       setTestCases(response.data);
     } catch (error) {
-      message.error('获取测试用例列表失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('获取测试用例列表失败:', error);
     } finally {
       setLoading(false);
@@ -118,7 +120,8 @@ const TestCaseManagement: React.FC = () => {
       setEditingCase(null);
       fetchTestCases();
     } catch (error) {
-      message.error(editingCase ? '测试用例更新失败' : '测试用例创建失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('测试用例操作失败:', error);
     }
   };
@@ -130,7 +133,8 @@ const TestCaseManagement: React.FC = () => {
       message.success('测试用例删除成功');
       fetchTestCases();
     } catch (error) {
-      message.error('测试用例删除失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('测试用例删除失败:', error);
     }
   };
@@ -367,6 +371,19 @@ const TestCaseManagement: React.FC = () => {
                 showTotal: (total: number) => `共 ${total} 个测试用例`,
               }}
               className="test-case-table"
+            />
+          </TabPane>
+          <TabPane tab="配置模板" key="templates">
+            <TestCaseConfigTemplates
+              onSelectTemplate={(config: TestCaseConfig) => {
+                // 当用户选择模板时，打开创建模态框并填充配置
+                const configJson = JSON.stringify(config, null, 2);
+                form.setFieldsValue({
+                  config: configJson,
+                });
+                setModalVisible(true);
+                setEditingCase(null);
+              }}
             />
           </TabPane>
         </Tabs>

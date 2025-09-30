@@ -1,0 +1,116 @@
+.test-case-config-form {
+  width: 100%;
+}
+
+.test-case-config-form .key-value-editor {
+  margin-bottom: 16px;
+}
+
+.test-case-config-form .key-value-editor .ant-row {
+  align-items: center;
+}
+
+.test-case-config-form .assertions-editor {
+  margin-bottom: 16px;
+}
+
+.test-case-config-form .assertions-editor .ant-card {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+}
+
+.test-case-config-form .ant-collapse {
+  background: transparent;
+  border: none;
+}
+
+.test-case-config-form .ant-collapse-item {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.test-case-config-form .ant-collapse-header {
+  background: #fafafa;
+  border-radius: 4px 4px 0 0;
+  padding: 12px 16px;
+  font-weight: 500;
+}
+
+.test-case-config-form .ant-collapse-content {
+  border: none;
+  border-radius: 0 0 4px 4px;
+}
+
+.test-case-config-form .ant-collapse-content-box {
+  padding: 16px;
+}
+
+.test-case-config-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.test-case-config-form .ant-form-item-label {
+  font-weight: 500;
+}
+
+.test-case-config-form .ant-input,
+.test-case-config-form .ant-select,
+.test-case-config-form .ant-input-number {
+  border-radius: 4px;
+}
+
+.test-case-config-form .ant-btn-dashed {
+  border-style: dashed;
+  border-color: #d9d9d9;
+  color: #666;
+}
+
+.test-case-config-form .ant-btn-dashed:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.test-case-config-form .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 16px;
+}
+
+.test-case-config-form .ant-card-body {
+  padding: 16px;
+}
+
+.test-case-config-form .ant-typography {
+  margin-bottom: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .test-case-config-form .ant-row {
+    margin-bottom: 8px;
+  }
+  
+  .test-case-config-form .ant-col {
+    margin-bottom: 8px;
+  }
+  
+  .test-case-config-form .key-value-editor .ant-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .test-case-config-form .key-value-editor .ant-col {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .test-case-config-form .assertions-editor .ant-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .test-case-config-form .assertions-editor .ant-col {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}

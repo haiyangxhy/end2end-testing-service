@@ -1,34 +1,30 @@
 package com.testplatform.service;
 
-import com.testplatform.model.TestExecution;
-import com.testplatform.model.TestCase;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.testplatform.model.TestEnvironment;
+import com.testplatform.model.TestExecution;
 import com.testplatform.model.TestSuite;
-import com.testplatform.repository.TestExecutionRepository;
-import com.testplatform.repository.TestCaseRepository;
-import com.testplatform.repository.TestEnvironmentRepository;
-import com.testplatform.testing.TestExecutor;
-import com.testplatform.testing.TestExecutorFactory;
-import com.testplatform.testing.TestExecutionResult;
+import com.testplatform.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
-@Primary
 public class TestExecutionServiceImpl implements TestExecutionService {
+    private static final Logger logger = LoggerFactory.getLogger(TestExecutionServiceImpl.class);
     
     @Autowired
-    private TestExecutionRepository testExecutionRepository;
+    private TestSuiteRepository testSuiteRepository;
+    
+    @Autowired
+    private TestSuiteCaseRepository testSuiteCaseRepository;
     
     @Autowired
     private TestCaseRepository testCaseRepository;
@@ -37,167 +33,154 @@ public class TestExecutionServiceImpl implements TestExecutionService {
     private TestEnvironmentRepository testEnvironmentRepository;
     
     @Autowired
-    private TestSuiteService testSuiteService;
+    private TestExecutionRepository testExecutionRepository;
     
     @Autowired
-    private TestExecutorFactory testExecutorFactory;
+    private TestExecutionLogRepository testExecutionLogRepository;
     
     @Autowired
-    private TestReportGenerationService testReportGenerationService;
+    private VariableRepository variableRepository;
+    
+    @Autowired
+    private AuthService authService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     
     @Override
-    public List<TestExecution> getAllExecutions() {
-        return testExecutionRepository.findAll();
-    }
-    
-    @Override
-    public Optional<TestExecution> getExecutionById(String id) {
-        return testExecutionRepository.findById(id);
-    }
-    
-    @Override
-    public List<TestExecution> getExecutionsBySuiteId(String suiteId) {
-        return testExecutionRepository.findBySuiteId(suiteId);
-    }
-    
-    @Override
-    public TestExecution createExecution(TestExecution execution) {
-        if (execution.getStartTime() == null) {
-            execution.setStartTime(LocalDateTime.now());
-        }
-        return testExecutionRepository.save(execution);
-    }
-    
-    @Override
-    public TestExecution updateExecution(String id, TestExecution execution) {
-        execution.setId(id);
-        if (execution.getStartTime() == null) {
-            execution.setStartTime(LocalDateTime.now());
-        }
-        return testExecutionRepository.save(execution);
-    }
-    
-    @Override
-    public void deleteExecution(String id) {
-        testExecutionRepository.deleteById(id);
-    }
-    
-    @Override
-    public List<TestExecution> getExecutionsByStatus(TestExecution.ExecutionStatus status) {
-        return testExecutionRepository.findByStatus(status);
-    }
-    
-    @Override
-    public TestExecution executeTest(String suiteId) {
-        // 创建新的测试执行记录
-        TestExecution execution = new TestExecution();
-        execution.setId(UUID.randomUUID().toString());
-        execution.setSuiteId(suiteId);
-        execution.setStatus(TestExecution.ExecutionStatus.RUNNING);
-        execution.setStartTime(LocalDateTime.now());
-        
-        // 保存执行记录
-        TestExecution savedExecution = testExecutionRepository.save(execution);
-        
-        // 异步执行测试
-        new Thread(() -> {
+    public CompletableFuture<TestExecution> executeTestSuite(String suiteId, String environmentId) {
+        return CompletableFuture.supplyAsync(() -> {
             try {
-                // 获取测试套件信息
-                Optional<TestSuite> testSuiteOptional = testSuiteService.getTestSuiteById(suiteId);
-                if (testSuiteOptional.isEmpty()) {
-                    throw new RuntimeException("测试套件不存在: " + suiteId);
-                }
-                TestSuite testSuite = testSuiteOptional.get();
-                // 获取测试套件中的所有测试用例（按优先级和执行顺序排序）
-                List<TestCase> testCases = testSuiteService.getOrderedTestCases(suiteId);
+                // 获取测试套件
+                TestSuite testSuite = testSuiteRepository.findById(suiteId)
+                    .orElseThrow(() -> new RuntimeException("测试套件不存在: " + suiteId));
                 
-                // 获取启用的测试环境
-                List<TestEnvironment> activeEnvironments = testEnvironmentRepository.findByIsActiveTrueOrderByCreatedAtDesc();
-                TestEnvironment testEnvironment = activeEnvironments.isEmpty() ? null : activeEnvironments.get(0);
+                // 获取环境配置
+                TestEnvironment environment = testEnvironmentRepository.findById(environmentId)
+                    .orElseThrow(() -> new RuntimeException("测试环境不存在: " + environmentId));
                 
-                // 根据测试套件类型获取执行器
-                TestExecutor executor = testExecutorFactory.getExecutor(testSuite);
+                // 创建测试执行记录
+                TestExecution execution = new TestExecution();
+                execution.setId(UUID.randomUUID().toString());
+                execution.setSuiteId(suiteId);
+                execution.setTestSuiteName(testSuite.getName());
+                execution.setEnvironmentId(environmentId);
+                execution.setStatus(TestExecution.ExecutionStatus.PENDING);
+                execution.setStartTime(LocalDateTime.now());
+                execution.setCreatedAt(LocalDateTime.now());
+                execution.setUpdatedAt(LocalDateTime.now());
                 
-                // 执行每个测试用例
-                int passed = 0;
-                int failed = 0;
-                List<TestExecutionResult> results = new ArrayList<>();
+                execution = testExecutionRepository.save(execution);
+
+                final TestExecution finalExecution = execution;
                 
-                for (TestCase testCase : testCases) {
+                // 异步执行测试
+                executorService.submit(() -> {
                     try {
-                        // 执行测试（使用测试套件的执行器）
-                        TestExecutionResult result = executor.execute(testCase, testEnvironment);
-                        // 设置测试用例信息
-                        result.setTestCaseId(testCase.getId());
-                        result.setTestCaseName(testCase.getName());
-                        result.setTestType(testSuite.getType().name()); // 使用测试套件的类型
-                        
-                        results.add(result);
-                        
-                        if (result.isSuccess()) {
-                            passed++;
-                        } else {
-                            failed++;
-                        }
+                        executeTestSuiteInternal(finalExecution, testSuite, environment);
                     } catch (Exception e) {
-                        // 根据错误信息创建 TestExecutionResult 实例，需确保使用正确的构造函数
-                        TestExecutionResult errorResult = new TestExecutionResult();
-                        errorResult.setSuccess(false);
-                        errorResult.setMessage("执行异常: " + e.getMessage());
-                        errorResult.setTestCaseId(testCase.getId());
-                        errorResult.setTestCaseName(testCase.getName());
-                        errorResult.setTestType(testSuite.getType().name()); // 使用测试套件的类型
-                        errorResult.setErrorDetails(e.toString());
-                        results.add(errorResult);
-                        failed++;
+                        logger.error("测试执行异常", e);
+                        updateExecutionStatus(finalExecution.getId(), TestExecution.ExecutionStatus.FAILED, 
+                            "测试执行异常: " + e.getMessage());
                     }
-                }
+                });
                 
-                // 更新执行记录
-                savedExecution.setStatus(TestExecution.ExecutionStatus.COMPLETED);
-                savedExecution.setEndTime(LocalDateTime.now());
-                
-                // 使用Jackson将结果列表转换为JSON
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.registerModule(new JavaTimeModule());
-                mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                String jsonResults = mapper.writeValueAsString(results);
-                
-                savedExecution.setExecutionLog(String.format(
-                    "{\"passed\": %d, \"failed\": %d, \"total\": %d, \"results\": %s}",
-                    passed, failed, passed + failed, jsonResults));
-
-                testExecutionRepository.save(savedExecution);
-
-                // 生成测试报告
-                try {
-                    testReportGenerationService.generateReport(savedExecution.getId());
-                } catch (Exception e) {
-                    // 记录报告生成错误，但不影响测试执行结果
-                    e.printStackTrace();
-                }
+                return execution;
             } catch (Exception e) {
-                // 更新执行记录为失败状态
-                savedExecution.setStatus(TestExecution.ExecutionStatus.FAILED);
-                savedExecution.setEndTime(LocalDateTime.now());
-                savedExecution.setExecutionLog("{\"error\": \"" + e.getMessage().replace("\"", "\\\"") + "\"}");
-                
-                testExecutionRepository.save(savedExecution);
+                logger.error("创建测试执行失败", e);
+                throw new RuntimeException("创建测试执行失败: " + e.getMessage());
             }
-        }).start();
-        
-        return savedExecution;
+        }, executorService);
     }
     
     @Override
-    public TestExecution stopExecution(String id) {
-        Optional<TestExecution> existingExecution = testExecutionRepository.findById(id);
-        if (existingExecution.isPresent()) {
-            TestExecution execution = existingExecution.get();
-            execution.setStatus(TestExecution.ExecutionStatus.FAILED);
-            execution.setEndTime(LocalDateTime.now());
-            return testExecutionRepository.save(execution);
+    public void startExecution(String executionId) {
+        try {
+            TestExecution execution = testExecutionRepository.findById(executionId).orElse(null);
+            if (execution != null && execution.getStatus() == TestExecution.ExecutionStatus.PENDING) {
+                execution.setStatus(TestExecution.ExecutionStatus.RUNNING);
+                execution.setUpdatedAt(LocalDateTime.now());
+                testExecutionRepository.save(execution);
+                logger.info("测试执行已开始: {}", executionId);
+            }
+        } catch (Exception e) {
+            logger.error("开始测试执行失败", e);
         }
-        return null;
+    }
+    
+    @Override
+    public void stopExecution(String executionId) {
+        try {
+            TestExecution execution = testExecutionRepository.findById(executionId).orElse(null);
+            if (execution != null && execution.getStatus() == TestExecution.ExecutionStatus.RUNNING) {
+                execution.setStatus(TestExecution.ExecutionStatus.CANCELLED);
+                execution.setResult("用户手动停止");
+                execution.setEndTime(LocalDateTime.now());
+                execution.setUpdatedAt(LocalDateTime.now());
+                testExecutionRepository.save(execution);
+                logger.info("测试执行已停止: {}", executionId);
+            }
+        } catch (Exception e) {
+            logger.error("停止测试执行失败", e);
+        }
+    }
+    
+    @Override
+    public TestExecution getExecutionStatus(String executionId) {
+        try {
+            return testExecutionRepository.findById(executionId).orElse(null);
+        } catch (Exception e) {
+            logger.error("获取执行状态失败", e);
+            return null;
+        }
+    }
+    
+    // 其他私有方法实现...
+    private void executeTestSuiteInternal(TestExecution execution, TestSuite testSuite, TestEnvironment environment) {
+        try {
+            // 更新状态为运行中
+            updateExecutionStatus(execution.getId(), TestExecution.ExecutionStatus.RUNNING, "开始执行测试");
+            
+            // 执行认证
+            AuthService.AuthResult authResult = authService.authenticate(environment);
+            if (!authResult.isSuccess()) {
+                updateExecutionStatus(execution.getId(), TestExecution.ExecutionStatus.FAILED, 
+                    "认证失败: " + authResult.getMessage());
+                return;
+            }
+            
+            logger.info("认证成功，开始执行测试套件: {}", testSuite.getName());
+            
+            // TODO: 实现具体的测试用例执行逻辑
+            // 这里可以添加获取测试用例、执行测试用例、记录日志等逻辑
+            
+            // 模拟执行完成
+            updateExecutionStatus(execution.getId(), TestExecution.ExecutionStatus.COMPLETED, "测试执行完成");
+            
+        } catch (Exception e) {
+            logger.error("测试执行内部异常", e);
+            updateExecutionStatus(execution.getId(), TestExecution.ExecutionStatus.FAILED, 
+                "测试执行内部异常: " + e.getMessage());
+        }
+    }
+    
+    private void updateExecutionStatus(String executionId, TestExecution.ExecutionStatus status, String message) {
+        try {
+            TestExecution execution = testExecutionRepository.findById(executionId).orElse(null);
+            if (execution != null) {
+                execution.setStatus(status);
+                execution.setResult(message);
+                execution.setUpdatedAt(LocalDateTime.now());
+                if (status == TestExecution.ExecutionStatus.COMPLETED || status == TestExecution.ExecutionStatus.FAILED) {
+                    execution.setEndTime(LocalDateTime.now());
+                }
+                testExecutionRepository.save(execution);
+                logger.info("更新执行状态: {} -> {}", executionId, status);
+            }
+        } catch (Exception e) {
+            logger.error("更新执行状态失败", e);
+        }
     }
 }

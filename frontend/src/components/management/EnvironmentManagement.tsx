@@ -26,8 +26,8 @@ import {
   CheckCircleOutlined,
   EnvironmentOutlined,
 } from '@ant-design/icons';
-import { environmentAPI } from '../services/api';
-import { TestEnvironment, EnvironmentForm } from '../types';
+import { environmentAPI, getErrorMessage } from '../../services/api';
+import { TestEnvironment, EnvironmentForm } from '../../types';
 import './EnvironmentManagement.css';
 
 const { Title, Text } = Typography;
@@ -48,7 +48,8 @@ const EnvironmentManagement: React.FC = () => {
       const response = await environmentAPI.getAll();
       setEnvironments(response.data);
     } catch (error) {
-      message.error('获取环境列表失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('获取环境列表失败:', error);
     } finally {
       setLoading(false);
@@ -100,7 +101,8 @@ const EnvironmentManagement: React.FC = () => {
       message.success('环境删除成功');
       fetchEnvironments();
     } catch (error) {
-      message.error('环境删除失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('环境删除失败:', error);
     }
   };
@@ -112,7 +114,8 @@ const EnvironmentManagement: React.FC = () => {
       message.success('环境激活成功');
       fetchEnvironments();
     } catch (error) {
-      message.error('环境激活失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('环境激活失败:', error);
     }
   };
@@ -124,10 +127,12 @@ const EnvironmentManagement: React.FC = () => {
       if(res.data.valid){
         message.success('环境验证成功');
       }else{
-        message.error(res.data.message);
+        const errorMessage = getErrorMessage(res);
+        message.error(errorMessage);
       }
     } catch (error) {
-      message.error('环境验证失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('环境验证失败:', error);
     }
   };

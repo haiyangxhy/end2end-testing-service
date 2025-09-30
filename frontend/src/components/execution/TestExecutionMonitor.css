@@ -1,0 +1,91 @@
+.test-execution-monitor {
+  padding: 16px;
+}
+
+.test-execution-monitor .execution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.test-execution-monitor .execution-title {
+  display: flex;
+  align-items: center;
+}
+
+.test-execution-monitor .log-item {
+  margin-bottom: 8px;
+}
+
+.test-execution-monitor .log-header {
+  margin-bottom: 4px;
+}
+
+.test-execution-monitor .log-message {
+  color: #666;
+  word-break: break-word;
+}
+
+.test-execution-monitor .ant-timeline-item-content {
+  margin-left: 16px;
+}
+
+.test-execution-monitor .ant-statistic-title {
+  font-size: 12px;
+  color: #666;
+}
+
+.test-execution-monitor .ant-statistic-content {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.test-execution-monitor .ant-progress-text {
+  font-size: 12px;
+}
+
+.test-execution-monitor .ant-alert {
+  border-radius: 4px;
+}
+
+.test-execution-monitor .ant-card {
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.test-execution-monitor .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 16px;
+}
+
+.test-execution-monitor .ant-card-body {
+  padding: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .test-execution-monitor {
+    padding: 8px;
+  }
+  
+  .test-execution-monitor .execution-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .test-execution-monitor .execution-title {
+    width: 100%;
+  }
+  
+  .test-execution-monitor .ant-col {
+    margin-bottom: 16px;
+  }
+  
+  .test-execution-monitor .log-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

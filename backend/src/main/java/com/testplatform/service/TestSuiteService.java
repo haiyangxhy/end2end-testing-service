@@ -14,4 +14,5 @@ public interface TestSuiteService {
     void deleteTestSuite(String id);
     List<TestSuite> getTestSuitesByType(TestSuite.TestSuiteType type);
     List<TestCase> getOrderedTestCases(String suiteId);
+    int getTestCaseCount(String suiteId);
 }

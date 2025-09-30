@@ -57,14 +57,28 @@ public class TestSuiteController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteTestSuite(@PathVariable String id) {
-        testSuiteService.deleteTestSuite(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteTestSuite(@PathVariable String id) {
+        try {
+            testSuiteService.deleteTestSuite(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            logger.error("删除测试套件失败: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            logger.error("删除测试套件时发生未知错误: {}", e.getMessage(), e);
+            return new ResponseEntity<>("删除测试套件失败: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     
     @GetMapping("/type/{type}")
     public ResponseEntity<List<TestSuite>> getTestSuitesByType(@PathVariable TestSuite.TestSuiteType type) {
         List<TestSuite> testSuites = testSuiteService.getTestSuitesByType(type);
         return new ResponseEntity<>(testSuites, HttpStatus.OK);
+    }
+    
+    @GetMapping("/{id}/test-case-count")
+    public ResponseEntity<Integer> getTestCaseCount(@PathVariable String id) {
+        int count = testSuiteService.getTestCaseCount(id);
+        return new ResponseEntity<>(count, HttpStatus.OK);
     }
 }

@@ -30,8 +30,8 @@ import {
   FolderOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { testSuiteAPI, testCaseAPI } from '../services/api';
-import { TestSuite, TestSuiteForm, TestCase } from '../types';
+import { testSuiteAPI, testCaseAPI, getErrorMessage } from '../../services/api';
+import { TestSuite, TestSuiteForm, TestCase } from '../../types';
 import TestSuiteCaseManagement from './TestSuiteCaseManagement';
 import './TestSuiteManagement.css';
 
@@ -51,6 +51,8 @@ const TestSuiteManagement: React.FC = () => {
   const [form] = Form.useForm();
   const [showCaseManagement, setShowCaseManagement] = useState(false);
   const [selectedSuite, setSelectedSuite] = useState<TestSuite | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [testCaseCounts, setTestCaseCounts] = useState<Record<string, number>>({});
 
   // 获取测试套件列表
   const fetchTestSuites = async () => {
@@ -77,17 +79,55 @@ const TestSuiteManagement: React.FC = () => {
     }
   };
 
+  // 获取所有测试套件的测试用例数量
+  const fetchTestCaseCounts = async () => {
+    try {
+      const counts: Record<string, number> = {};
+      for (const suite of testSuites) {
+        try {
+          const response = await testSuiteAPI.getTestCaseCount(suite.id);
+          counts[suite.id] = response.data;
+        } catch (error) {
+          console.error(`获取测试套件 ${suite.id} 的测试用例数量失败:`, error);
+          counts[suite.id] = 0;
+        }
+      }
+      setTestCaseCounts(counts);
+    } catch (error) {
+      console.error('获取测试用例数量失败:', error);
+    }
+  };
+
   // 初始化数据
   useEffect(() => {
     fetchTestSuites();
     fetchTestCases();
   }, []);
 
+  // 当refreshTrigger变化时重新获取数据
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchTestSuites();
+    }
+  }, [refreshTrigger]);
+
+  // 当测试套件列表变化时获取测试用例数量
+  useEffect(() => {
+    if (testSuites.length > 0) {
+      fetchTestCaseCounts();
+    }
+  }, [testSuites]);
+
+  // 触发刷新测试套件列表
+  const triggerRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   // 处理创建/编辑测试套件
   const handleSubmit = async (values: TestSuiteForm) => {
     try {
       // 将testCases数组转换为testSuiteCases格式
-      const testSuiteCases = values.testCases?.map((testCaseId, index) => ({
+      const testSuiteCases = values.testCases?.map((testCaseId: any, index: number) => ({
         id: '', // 后端会生成
         suiteId: editingSuite?.id || '', // 创建时为空，更新时使用现有ID
         testCaseId: testCaseId,
@@ -115,7 +155,8 @@ const TestSuiteManagement: React.FC = () => {
       setEditingSuite(null);
       fetchTestSuites();
     } catch (error) {
-      message.error(editingSuite ? '测试套件更新失败' : '测试套件创建失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('测试套件操作失败:', error);
     }
   };
@@ -127,7 +168,8 @@ const TestSuiteManagement: React.FC = () => {
       message.success('测试套件删除成功');
       fetchTestSuites();
     } catch (error) {
-      message.error('测试套件删除失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('测试套件删除失败:', error);
     }
   };
@@ -149,7 +191,7 @@ const TestSuiteManagement: React.FC = () => {
     setEditingSuite(suite);
     
     // 从testSuiteCases中提取testCaseId列表
-    const testCaseIds = suite.testSuiteCases?.map(tc => tc.testCaseId) || [];
+    const testCaseIds = suite.testSuiteCases?.map((tc: any) => tc.testCaseId) || [];
     
     form.setFieldsValue({
       name: suite.name,
@@ -242,10 +284,10 @@ const TestSuiteManagement: React.FC = () => {
       title: '测试用例数',
       dataIndex: 'testCases',
       key: 'testCases',
-      render: (testCases: string[]) => (
+      render: (testCases: string[], record: TestSuite) => (
         <Space>
           <FileTextOutlined />
-          <Text>{testCases?.length || 0}</Text>
+          <Text>{testCaseCounts[record.id] || 0}</Text>
         </Space>
       ),
     },
@@ -325,6 +367,7 @@ const TestSuiteManagement: React.FC = () => {
             console.error('保存测试用例配置失败:', error);
           }
         }}
+        onRefresh={triggerRefresh}
       />
     );
   }

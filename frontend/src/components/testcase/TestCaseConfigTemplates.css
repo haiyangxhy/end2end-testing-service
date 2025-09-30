@@ -1,0 +1,156 @@
+.test-case-config-templates {
+  width: 100%;
+}
+
+.test-case-config-templates .templates-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.test-case-config-templates .template-content {
+  padding: 16px 0;
+}
+
+.test-case-config-templates .template-info {
+  margin-bottom: 16px;
+}
+
+.test-case-config-templates .template-config {
+  margin-top: 16px;
+}
+
+.test-case-config-templates .config-example {
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.test-case-config-templates .config-example pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.test-case-config-templates .variable-help {
+  margin-top: 16px;
+}
+
+.test-case-config-templates .variable-list {
+  margin-top: 12px;
+}
+
+.test-case-config-templates .variable-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.test-case-config-templates .variable-item .ant-tag {
+  margin: 0;
+  min-width: 120px;
+  text-align: center;
+}
+
+.test-case-config-templates .assertion-help {
+  margin-top: 16px;
+}
+
+.test-case-config-templates .assertion-list {
+  margin-top: 12px;
+}
+
+.test-case-config-templates .assertion-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.test-case-config-templates .assertion-item .ant-tag {
+  margin: 0;
+  min-width: 100px;
+  text-align: center;
+}
+
+.test-case-config-templates .extract-help {
+  margin-top: 16px;
+}
+
+.test-case-config-templates .extract-examples {
+  margin-top: 12px;
+}
+
+.test-case-config-templates .extract-example {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.test-case-config-templates .extract-example code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  min-width: 120px;
+  text-align: center;
+}
+
+.test-case-config-templates .ant-tabs-content-holder {
+  padding: 0;
+}
+
+.test-case-config-templates .ant-collapse {
+  background: transparent;
+  border: none;
+}
+
+.test-case-config-templates .ant-collapse-item {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.test-case-config-templates .ant-collapse-header {
+  background: #fafafa;
+  border-radius: 4px 4px 0 0;
+  padding: 12px 16px;
+  font-weight: 500;
+}
+
+.test-case-config-templates .ant-collapse-content {
+  border: none;
+  border-radius: 0 0 4px 4px;
+}
+
+.test-case-config-templates .ant-collapse-content-box {
+  padding: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .test-case-config-templates .variable-item,
+  .test-case-config-templates .assertion-item,
+  .test-case-config-templates .extract-example {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .test-case-config-templates .variable-item .ant-tag,
+  .test-case-config-templates .assertion-item .ant-tag {
+    min-width: auto;
+  }
+  
+  .test-case-config-templates .extract-example code {
+    min-width: auto;
+  }
+}

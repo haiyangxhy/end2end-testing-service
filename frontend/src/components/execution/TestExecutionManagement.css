@@ -1,0 +1,82 @@
+.test-execution-management {
+  padding: 24px;
+}
+
+.test-execution-management .execution-controls {
+  margin-bottom: 24px;
+}
+
+.test-execution-management .execution-stats {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+.test-execution-management .execution-list {
+  margin-top: 24px;
+}
+
+.test-execution-management .execution-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.test-execution-management .execution-item {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.test-execution-management .execution-item:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.test-execution-management .execution-item-content {
+  padding: 8px 0;
+}
+
+.test-execution-management .execution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.test-execution-management .execution-progress {
+  margin: 8px 0;
+}
+
+.test-execution-management .execution-result {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  word-break: break-word;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .test-execution-management {
+    padding: 16px;
+  }
+  
+  .test-execution-management .execution-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .test-execution-management .execution-items {
+    grid-template-columns: 1fr;
+  }
+  
+  .test-execution-management .execution-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

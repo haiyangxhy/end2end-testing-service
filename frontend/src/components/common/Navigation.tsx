@@ -34,6 +34,11 @@ const Navigation: React.FC = () => {
       label: <Link to="/execution">测试执行</Link>,
     },
     {
+      key: '/execution-management',
+      icon: <PlayCircleOutlined />,
+      label: <Link to="/execution-management">执行管理</Link>,
+    },
+    {
       key: '/reports',
       icon: <BarChartOutlined />,
       label: <Link to="/reports">报告中心</Link>,

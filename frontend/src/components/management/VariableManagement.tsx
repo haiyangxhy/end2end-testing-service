@@ -31,8 +31,8 @@ import {
   LockOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
-import { variableAPI, environmentAPI } from '../services/api';
-import { GlobalVariable, VariableForm, TestEnvironment } from '../types';
+import { variableAPI, environmentAPI, getErrorMessage } from '../../services/api';
+import { GlobalVariable, VariableForm, TestEnvironment } from '../../types';
 import './VariableManagement.css';
 
 const { Title, Text } = Typography;
@@ -57,7 +57,8 @@ const VariableManagement: React.FC = () => {
       const response = await variableAPI.getAll(environmentId);
       setVariables(response.data);
     } catch (error) {
-      message.error('获取变量列表失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('获取变量列表失败:', error);
     } finally {
       setLoading(false);
@@ -101,7 +102,8 @@ const VariableManagement: React.FC = () => {
       setEditingVariable(null);
       fetchVariables(selectedEnvironment);
     } catch (error) {
-      message.error(editingVariable ? '变量更新失败' : '变量创建失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('变量操作失败:', error);
     }
   };
@@ -113,7 +115,8 @@ const VariableManagement: React.FC = () => {
       message.success('变量删除成功');
       fetchVariables(selectedEnvironment);
     } catch (error) {
-      message.error('变量删除失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('变量删除失败:', error);
     }
   };
@@ -125,7 +128,8 @@ const VariableManagement: React.FC = () => {
       message.success('变量复制成功');
       fetchVariables(selectedEnvironment);
     } catch (error) {
-      message.error('变量复制失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('变量复制失败:', error);
     }
   };
@@ -140,7 +144,8 @@ const VariableManagement: React.FC = () => {
       message.success('变量替换测试成功');
       console.log('替换结果:', response.data);
     } catch (error) {
-      message.error('变量替换测试失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('变量替换测试失败:', error);
     }
   };

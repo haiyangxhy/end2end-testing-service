@@ -15,12 +15,32 @@ export interface User extends BaseEntity {
   lastLogin?: string;
 }
 
+// 测试用例配置相关类型
+export interface TestCaseConfig {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  endpoint: string;
+  headers?: Record<string, string>;
+  params?: Record<string, any>;
+  body?: any;
+  assertions?: TestAssertion[];
+  extract?: Record<string, string>;
+  timeout?: number;
+  retries?: number;
+}
+
+export interface TestAssertion {
+  type: 'statusCode' | 'jsonPath' | 'responseTime' | 'contains' | 'equals';
+  path?: string;
+  expected: any;
+  operator?: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains' | 'notContains' | 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'NOT_CONTAINS';
+}
+
 // 测试用例相关类型
 export interface TestCase extends BaseEntity {
   name: string;
   description?: string;
   // 移除type字段，测试用例类型由所属的测试套件决定
-  config: string;
+  config: string; // JSON字符串，存储TestCaseConfig
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
   tags?: string;
@@ -37,6 +57,8 @@ export interface TestSuiteCase extends BaseEntity {
   testCase?: TestCase; // 可选的测试用例详情，用于前端显示
   executionOrder: number;
   isEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // 测试套件相关类型
@@ -60,6 +82,31 @@ export interface TestExecution extends BaseEntity {
   errorMessage?: string;
   duration?: number;
   progress?: number;
+  environmentId?: string;
+  executionLogs?: TestExecutionLog[];
+}
+
+export interface TestExecutionLog {
+  id: string;
+  executionId: string;
+  testCaseId: string;
+  step: string;
+  timestamp: string;
+  level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+  message: string;
+  requestData?: any;
+  responseData?: any;
+  duration?: number;
+}
+
+export interface TestExecutionContext {
+  environmentId: string;
+  environment: TestEnvironment;
+  authToken?: string;
+  refreshToken?: string;
+  tokenVersion?: string;
+  variables: Record<string, any>;
+  extractedData: Record<string, any>;
 }
 
 // 测试报告相关类型
@@ -105,14 +152,38 @@ export interface ReportDetail {
   metadata?: string;
 }
 
+// 认证配置相关类型
+export interface AuthConfig {
+  type: 'jwt' | 'basic' | 'oauth2' | 'apiKey' | 'none';
+  loginUrl?: string;
+  credentials?: {
+    username: string;
+    password: string;
+  };
+  tokenField?: string;
+  refreshTokenField?: string;
+  tokenVersionField?: string;
+  headerName?: string;
+  headerFormat?: string;
+  refreshUrl?: string;
+  refreshMethod?: 'GET' | 'POST' | 'PUT';
+  refreshParams?: Record<string, string>;
+  expiresIn?: number;
+  autoRefresh?: boolean;
+  apiKey?: string;
+  apiKeyHeader?: string;
+  apiKeyValue?: string;
+}
+
 // 环境管理相关类型
 export interface TestEnvironment extends BaseEntity {
   name: string;
   description?: string;
+  type: 'DEVELOPMENT' | 'TESTING' | 'STAGING' | 'PRODUCTION';
   apiBaseUrl?: string;
   uiBaseUrl?: string;
   databaseConfig?: string;
-  authConfig?: string;
+  authConfig?: string; // JSON字符串，存储AuthConfig
   isActive: boolean;
   createdBy: string;
 }

@@ -57,6 +57,21 @@ public class TestExecution {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "test_suite_name")
+    private String testSuiteName;
+    
+    @Column(name = "result", columnDefinition = "TEXT")
+    private String result;
+    
+    @Column(name = "progress")
+    private Integer progress;
+    
+    @Column(name = "duration")
+    private Long duration;
+    
     // Constructors
     public TestExecution() {
         this.id = UUID.randomUUID().toString();
@@ -189,6 +204,46 @@ public class TestExecution {
     
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    public String getTestSuiteName() {
+        return testSuiteName;
+    }
+    
+    public void setTestSuiteName(String testSuiteName) {
+        this.testSuiteName = testSuiteName;
+    }
+    
+    public String getResult() {
+        return result;
+    }
+    
+    public void setResult(String result) {
+        this.result = result;
+    }
+    
+    public Integer getProgress() {
+        return progress;
+    }
+    
+    public void setProgress(Integer progress) {
+        this.progress = progress;
+    }
+    
+    public Long getDuration() {
+        return duration;
+    }
+    
+    public void setDuration(Long duration) {
+        this.duration = duration;
     }
     
     @PrePersist

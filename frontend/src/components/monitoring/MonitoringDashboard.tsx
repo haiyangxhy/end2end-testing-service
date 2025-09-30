@@ -37,8 +37,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { monitoringAPI } from '../services/api';
-import { RealTimeData, StatisticsReport, TrendReport, PerformanceReport } from '../types';
+import { monitoringAPI } from '../../services/api';
+import { RealTimeData, StatisticsReport, TrendReport, PerformanceReport } from '../../types';
 import './MonitoringDashboard.css';
 
 const { Title, Text } = Typography;
@@ -137,7 +137,7 @@ const MonitoringDashboard: React.FC = () => {
   const prepareTrendChartData = () => {
     if (!trendData?.dailyStats) return [];
     
-    return Object.entries(trendData.dailyStats).map(([date, stats]) => ({
+    return Object.entries(trendData.dailyStats).map(([date, stats]: [string, any]) => ({
       date,
       total: stats.total,
       passed: stats.passed,

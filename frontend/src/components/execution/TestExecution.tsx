@@ -29,8 +29,8 @@ import {
   SettingOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
-import { testSuiteAPI, testExecutionAPI } from '../services/api';
-import { TestSuite, TestExecution } from '../types';
+import { testSuiteAPI, testExecutionAPI, environmentAPI } from '../../services/api';
+import { TestSuite, TestExecution, TestEnvironment } from '../../types';
 import './TestExecution.css';
 
 const { Title, Text } = Typography;
@@ -43,6 +43,8 @@ const TestExecutionComponent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [selectedSuite, setSelectedSuite] = useState<string>('');
+  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
+  const [testEnvironments, setTestEnvironments] = useState<TestEnvironment[]>([]);
 
   // 获取测试套件列表
   const fetchTestSuites = async () => {
@@ -52,6 +54,32 @@ const TestExecutionComponent: React.FC = () => {
     } catch (error) {
       message.error('获取测试套件列表失败');
       console.error('获取测试套件列表失败:', error);
+    }
+  };
+
+  // 获取激活的测试环境
+  const fetchActiveEnvironment = async () => {
+    try {
+      const response = await environmentAPI.getActive();
+      if (response.data) {
+        setSelectedEnvironment(response.data.id);
+        setTestEnvironments([response.data]);
+      } else {
+        // 如果没有激活环境，获取所有环境供用户选择
+        const allResponse = await environmentAPI.getAll();
+        setTestEnvironments(allResponse.data);
+        message.warning('没有激活的测试环境，请手动选择');
+      }
+    } catch (error) {
+      console.error('获取激活环境失败:', error);
+      // 如果获取激活环境失败，尝试获取所有环境
+      try {
+        const response = await environmentAPI.getAll();
+        setTestEnvironments(response.data);
+        message.warning('获取激活环境失败，请手动选择测试环境');
+      } catch (fallbackError) {
+        message.error('获取测试环境失败');
+      }
     }
   };
 
@@ -69,6 +97,7 @@ const TestExecutionComponent: React.FC = () => {
   // 初始化数据
   useEffect(() => {
     fetchTestSuites();
+    fetchActiveEnvironment();
     fetchExecutions();
   }, []);
 
@@ -78,10 +107,14 @@ const TestExecutionComponent: React.FC = () => {
       message.warning('请选择要执行的测试套件');
       return;
     }
+    if (!selectedEnvironment) {
+      message.warning('请选择测试环境');
+      return;
+    }
 
     try {
       setExecuting(true);
-      const response = await testExecutionAPI.create({ suiteId: selectedSuite });
+      const response = await testExecutionAPI.execute({ suiteId: selectedSuite, environmentId: selectedEnvironment });
       setCurrentExecution(response.data);
       message.success('测试执行已启动');
       
@@ -232,6 +265,39 @@ const TestExecutionComponent: React.FC = () => {
                 </div>
               </div>
 
+              <div className="environment-selection">
+                <Text strong>测试环境：</Text>
+                <div className="environment-list">
+                  {testEnvironments.length === 1 && selectedEnvironment ? (
+                    // 只有一个环境时，显示当前环境信息
+                    <div className="environment-item selected">
+                      <Space>
+                        <DesktopOutlined />
+                        <Text>{testEnvironments[0].name}</Text>
+                        <Tag color="green">{testEnvironments[0].type}</Tag>
+                        <Tag color="blue">已激活</Tag>
+                      </Space>
+                    </div>
+                  ) : (
+                    // 多个环境时，显示选择列表
+                    testEnvironments.map(env => (
+                      <div
+                        key={env.id}
+                        className={`environment-item ${selectedEnvironment === env.id ? 'selected' : ''}`}
+                        onClick={() => setSelectedEnvironment(env.id)}
+                      >
+                        <Space>
+                          <DesktopOutlined />
+                          <Text>{env.name}</Text>
+                          <Tag color="green">{env.type}</Tag>
+                          {env.isActive && <Tag color="blue">已激活</Tag>}
+                        </Space>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
               <Divider />
 
               <div className="execution-actions">
@@ -240,7 +306,7 @@ const TestExecutionComponent: React.FC = () => {
                     type="primary"
                     icon={<PlayCircleOutlined />}
                     onClick={handleExecute}
-                    disabled={!selectedSuite || executing}
+                    disabled={!selectedSuite || !selectedEnvironment || executing}
                     loading={executing}
                   >
                     {executing ? '执行中...' : '开始执行'}

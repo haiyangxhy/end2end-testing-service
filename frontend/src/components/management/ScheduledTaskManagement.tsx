@@ -23,8 +23,8 @@ import {
   PauseCircleOutlined,
   ClockCircleOutlined
 } from '@ant-design/icons';
-import { ScheduledTask, ScheduledTaskForm, TestSuite, TestEnvironment } from '../types';
-import { scheduledTaskAPI } from '../services/api';
+import { ScheduledTask, ScheduledTaskForm, TestSuite, TestEnvironment } from '../../types';
+import { scheduledTaskAPI, getErrorMessage } from '../../services/api';
 import './ScheduledTaskManagement.css';
 
 const { Option } = Select;
@@ -62,7 +62,8 @@ const ScheduledTaskManagement: React.FC = () => {
       const response = await scheduledTaskAPI.getAll();
       setTasks(response.data);
     } catch (error) {
-      message.error('获取定时任务列表失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('获取定时任务列表失败:', error);
     } finally {
       setLoading(false);
@@ -120,7 +121,8 @@ const ScheduledTaskManagement: React.FC = () => {
       setEditingTask(null);
       fetchTasks();
     } catch (error) {
-      message.error(editingTask ? '定时任务更新失败' : '定时任务创建失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('定时任务操作失败:', error);
     }
   };
@@ -131,7 +133,8 @@ const ScheduledTaskManagement: React.FC = () => {
       message.success('定时任务删除成功');
       fetchTasks();
     } catch (error) {
-      message.error('定时任务删除失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('删除定时任务失败:', error);
     }
   };
@@ -142,7 +145,8 @@ const ScheduledTaskManagement: React.FC = () => {
       message.success(`定时任务已${isActive ? '启用' : '禁用'}`);
       fetchTasks();
     } catch (error) {
-      message.error('切换定时任务状态失败');
+      const errorMessage = getErrorMessage(error);
+      message.error(errorMessage);
       console.error('切换定时任务状态失败:', error);
     }
   };

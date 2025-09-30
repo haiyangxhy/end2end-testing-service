@@ -90,17 +90,17 @@ public class ScheduledTaskController {
      * 删除定时任务
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteScheduledTask(@PathVariable String id) {
+    public ResponseEntity<?> deleteScheduledTask(@PathVariable String id) {
         try {
             logger.info("删除定时任务: {}", id);
             scheduledTaskService.deleteScheduledTask(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (RuntimeException e) {
-            logger.warn("定时任务不存在: {}", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            logger.warn("删除定时任务失败: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            logger.error("删除定时任务失败: {}", id, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("删除定时任务时发生未知错误: {}", e.getMessage(), e);
+            return new ResponseEntity<>("删除定时任务失败: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     

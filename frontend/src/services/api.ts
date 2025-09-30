@@ -37,6 +37,29 @@ api.interceptors.response.use(
   }
 );
 
+// 错误处理工具函数
+export const getErrorMessage = (error: any): string => {
+  if (error.response?.data) {
+    // 如果后端返回了具体的错误信息
+    if (typeof error.response.data === 'string') {
+      return error.response.data;
+    }
+    if (error.response.data.error) {
+      return error.response.data.error;
+    }
+    if (error.response.data.message) {
+      return error.response.data.message;
+    }
+  }
+  
+  // 网络错误或其他错误
+  if (error.message) {
+    return error.message;
+  }
+  
+  return '操作失败，请稍后重试';
+};
+
 // 认证相关API
 export const authAPI = {
   login: (credentials: { username: string; password: string }) =>
@@ -62,18 +85,9 @@ export const testSuiteAPI = {
   create: (data: any) => api.post('/test-suites', data),
   update: (id: string, data: any) => api.put(`/test-suites/${id}`, data),
   delete: (id: string) => api.delete(`/test-suites/${id}`),
+  getTestCaseCount: (id: string) => api.get(`/test-suites/${id}/test-case-count`),
 };
 
-// 测试执行相关API
-export const testExecutionAPI = {
-  getAll: () => api.get('/test-executions'),
-  getById: (id: string) => api.get(`/test-executions/${id}`),
-  create: (data: any) => api.post('/test-executions', data),
-  execute: (suiteId: string) => api.post(`/test-executions/execute/${suiteId}`),
-  start: (id: string) => api.post(`/test-executions/${id}/start`),
-  stop: (id: string) => api.post(`/test-executions/${id}/stop`),
-  getStatus: (id: string) => api.get(`/test-executions/${id}/status`),
-};
 
 // 测试报告相关API
 export const testReportAPI = {
@@ -88,6 +102,7 @@ export const testReportAPI = {
 export const environmentAPI = {
   getAll: () => api.get('/environments'),
   getById: (id: string) => api.get(`/environments/${id}`),
+  getActive: () => api.get('/environments/active'),
   create: (data: any) => api.post('/environments', data),
   update: (id: string, data: any) => api.put(`/environments/${id}`, data),
   delete: (id: string) => api.delete(`/environments/${id}`),
@@ -156,6 +171,26 @@ export const scheduledTaskAPI = {
   // 获取测试套件和环境列表（用于下拉选择）
   getTestSuites: () => api.get('/test-suites'),
   getTestEnvironments: () => api.get('/environments')
+};
+
+// 测试套件用例相关API
+export const testSuiteCaseAPI = {
+  getBySuiteId: (suiteId: string) => api.get(`/test-suite-cases/suite/${suiteId}`),
+  getBySuiteIdWithDetails: (suiteId: string) => api.get(`/test-suite-cases/suite/${suiteId}/with-details`),
+  addTestCaseToSuite: (data: { suiteId: string; testCaseId: string }) => api.post('/test-suite-cases', data),
+  updateExecutionOrder: (id: string, executionOrder: number) => api.put(`/test-suite-cases/${id}/order`, { executionOrder }),
+  toggleEnabled: (id: string) => api.put(`/test-suite-cases/${id}/toggle`),
+  removeFromSuite: (id: string) => api.delete(`/test-suite-cases/${id}`),
+};
+
+// 测试执行相关API
+export const testExecutionAPI = {
+  execute: (data: { suiteId: string; environmentId: string }) => api.post('/test-executions/execute', data),
+  getById: (id: string) => api.get(`/test-executions/${id}`),
+  getAll: () => api.get('/test-executions'),
+  getLogs: (id: string) => api.get(`/test-executions/${id}/logs`),
+  streamLogs: (id: string) => new EventSource(`${process.env.REACT_APP_API_URL || 'http://localhost:8180/api'}/test-executions/${id}/logs/stream`),
+  stop: (id: string) => api.post(`/test-executions/${id}/stop`),
 };
 
 export default api;

@@ -64,9 +64,17 @@ public class TestCaseController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteTestCase(@PathVariable String id) {
-        testCaseService.deleteTestCase(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteTestCase(@PathVariable String id) {
+        try {
+            testCaseService.deleteTestCase(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            logger.error("删除测试用例失败: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            logger.error("删除测试用例时发生未知错误: {}", e.getMessage(), e);
+            return new ResponseEntity<>("删除测试用例失败: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     
     // 移除按类型查询的API，测试用例不再有类型字段

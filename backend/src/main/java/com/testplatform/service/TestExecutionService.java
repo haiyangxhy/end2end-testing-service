@@ -1,20 +1,37 @@
 package com.testplatform.service;
 
 import com.testplatform.model.TestExecution;
+import com.testplatform.model.TestSuite;
+import com.testplatform.model.TestEnvironment;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public interface TestExecutionService {
-    List<TestExecution> getAllExecutions();
-    Optional<TestExecution> getExecutionById(String id);
-    List<TestExecution> getExecutionsBySuiteId(String suiteId);
-    TestExecution createExecution(TestExecution execution);
-    TestExecution updateExecution(String id, TestExecution execution);
-    void deleteExecution(String id);
-    List<TestExecution> getExecutionsByStatus(TestExecution.ExecutionStatus status);
     
-    // 添加执行测试和停止测试的方法
-    TestExecution executeTest(String suiteId);
-    TestExecution stopExecution(String id);
+    /**
+     * 执行测试套件
+     * @param suiteId 测试套件ID
+     * @param environmentId 环境ID
+     * @return 测试执行结果
+     */
+    CompletableFuture<TestExecution> executeTestSuite(String suiteId, String environmentId);
+    
+    /**
+     * 开始执行测试
+     * @param executionId 执行ID
+     */
+    void startExecution(String executionId);
+    
+    /**
+     * 停止执行测试
+     * @param executionId 执行ID
+     */
+    void stopExecution(String executionId);
+    
+    /**
+     * 获取执行状态
+     * @param executionId 执行ID
+     * @return 执行状态
+     */
+    TestExecution getExecutionStatus(String executionId);
 }

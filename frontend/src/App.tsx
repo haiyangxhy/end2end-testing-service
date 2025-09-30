@@ -7,6 +7,7 @@ import Navigation from './components/common/Navigation';
 import TestSuiteManagement from './components/testsuite/TestSuiteManagement';
 import TestCaseManagement from './components/testcase/TestCaseManagement';
 import TestExecution from './components/execution/TestExecution';
+import TestExecutionManagement from './components/execution/TestExecutionManagement';
 import ReportDashboard from './components/report/ReportDashboard';
 import MonitoringDashboard from './components/monitoring/MonitoringDashboard';
 import EnvironmentManagement from './components/management/EnvironmentManagement';
@@ -50,6 +51,7 @@ function App() {
                     <Route path="/test-suites" element={<TestSuiteManagement />} />
                     <Route path="/test-cases" element={<TestCaseManagement />} />
                     <Route path="/execution" element={<TestExecution />} />
+                    <Route path="/execution-management" element={<TestExecutionManagement />} />
                     <Route path="/reports" element={<ReportDashboard />} />
                     <Route path="/monitoring" element={<MonitoringDashboard />} />
                     <Route path="/environments" element={<EnvironmentManagement />} />

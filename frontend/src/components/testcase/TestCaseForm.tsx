@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './TestCaseForm.css';
-import { TestCase, TestSuite } from '../types';
+import { TestCase, TestSuite, TestCaseConfig } from '../../types';
+import TestCaseConfigForm from './TestCaseConfigForm';
 
 interface TestCaseFormProps {
   testCase: TestCase | null;
@@ -26,6 +27,18 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
     updatedAt: ''
   });
   
+  const [configData, setConfigData] = useState<TestCaseConfig>({
+    method: 'GET',
+    endpoint: '',
+    headers: {},
+    params: {},
+    body: null,
+    assertions: [],
+    extract: {},
+    timeout: 30000,
+    retries: 0,
+  });
+  
   // 移除testSuites状态，测试用例不再直接关联测试套件
 
   // 移除fetchTestSuites调用，测试用例不再直接关联测试套件
@@ -33,6 +46,15 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
   useEffect(() => {
     if (testCase) {
       setFormData(testCase);
+      // 解析配置JSON
+      if (testCase.config) {
+        try {
+          const parsedConfig = JSON.parse(testCase.config);
+          setConfigData(parsedConfig);
+        } catch (error) {
+          console.warn('解析测试用例配置失败:', error);
+        }
+      }
     }
   }, [testCase]);
 
@@ -40,26 +62,33 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prevFormData => ({
+    setFormData((prevFormData: any) => ({
       ...prevFormData,
       [name]: value
+    }));
+  };
+
+  const handleConfigChange = (config: TestCaseConfig) => {
+    setConfigData(config);
+    // 将配置转换为JSON字符串
+    const configJson = JSON.stringify(config, null, 2);
+    setFormData(prev => ({
+      ...prev,
+      config: configJson
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate JSON format for config field
-    if (formData.config.trim() !== '') {
-      try {
-        JSON.parse(formData.config);
-      } catch (error) {
-        alert('配置字段必须是有效的JSON格式');
-        return;
-      }
-    }
+    // 确保配置数据已同步
+    const configJson = JSON.stringify(configData, null, 2);
+    const finalFormData = {
+      ...formData,
+      config: configJson
+    };
     
-    onSave(formData);
+    onSave(finalFormData);
   };
 
   return (
@@ -106,14 +135,9 @@ const TestCaseForm: React.FC<TestCaseFormProps> = ({ testCase, onSave, onCancel 
         </div>
         
         <div className="form-group">
-          <label htmlFor="config">配置:</label>
-          <textarea
-            id="config"
-            name="config"
-            value={formData.config}
-            onChange={handleChange}
-            rows={6}
-            placeholder="请输入测试配置，JSON格式，例如：&#10;{&#10;  &quot;url&quot;: &quot;/api/login&quot;,&#10;  &quot;method&quot;: &quot;POST&quot;,&#10;  &quot;body&quot;: {&#10;    &quot;username&quot;: &quot;test&quot;,&#10;    &quot;password&quot;: &quot;123456&quot;&#10;  }&#10;}"
+          <TestCaseConfigForm
+            value={configData}
+            onChange={handleConfigChange}
           />
         </div>
         

@@ -277,6 +277,15 @@ public class TestSuiteServiceImpl implements TestSuiteService {
     }
     
     /**
+     * 获取测试套件的测试用例数量
+     */
+    @Override
+    public int getTestCaseCount(String suiteId) {
+        List<TestSuiteCase> suiteCases = testSuiteCaseRepository.findBySuiteIdOrderByExecutionOrder(suiteId);
+        return suiteCases.size();
+    }
+    
+    /**
      * 将用户名映射到用户ID
      */
     private String mapUsernameToUserId(String username) {
